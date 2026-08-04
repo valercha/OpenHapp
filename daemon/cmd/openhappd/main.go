@@ -3,24 +3,28 @@ package main
 import (
 	"log"
 	"os"
-)
 
-const version = "0.1.0-dev"
+	"github.com/valercha/OpenHapp/daemon/internal/state"
+	"github.com/valercha/OpenHapp/daemon/internal/version"
+)
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Printf("openhappd %s starting", version)
+	log.Printf("openhappd %s starting", version.Version)
+
+	st := state.New(version.Version)
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "version":
-			log.Println(version)
+			log.Println(version.Version)
 			return
 		case "status":
-			log.Println("status: not implemented")
+			log.Printf("status: %+v", st.Snapshot())
 			return
 		}
 	}
 
-	log.Println("daemon skeleton is running")
+	st.Start()
+	log.Printf("daemon skeleton is running: %+v", st.Snapshot())
 }
