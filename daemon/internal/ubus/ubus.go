@@ -26,18 +26,18 @@ func (s *Server) Start(ctx context.Context) error {
 	if s.svc == nil {
 		return fmt.Errorf("service is nil")
 	}
+
 	return s.svc.Start(ctx)
 }
 
-// Stop stops the service.
+// Stop stops the underlying service.
 func (s *Server) Stop() {
-	if s.svc == nil {
-		return
+	if s.svc != nil {
+		s.svc.Stop()
 	}
-	s.svc.Stop()
 }
 
-// Status returns a snapshot of the current daemon state.
+// Status returns the current runtime snapshot.
 func (s *Server) Status() state.Snapshot {
 	if s.st == nil {
 		return state.Snapshot{}
@@ -45,7 +45,7 @@ func (s *Server) Status() state.Snapshot {
 	return s.st.Snapshot()
 }
 
-// Config returns the runtime configuration snapshot.
+// Config returns the current runtime configuration snapshot.
 func (s *Server) Config() config.Config {
 	return s.cfg
 }
