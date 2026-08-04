@@ -15,3 +15,8 @@ vendor/
 # OpenWrt build
 build/
 .tmp/
+
+# Packaging artifacts
+*.ipk
+*.apk
+*.tar.gz
