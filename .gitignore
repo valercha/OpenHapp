@@ -1,0 +1,17 @@
+# Binaries
+bin/
+dist/
+*.exe
+*.out
+
+# Go
+.coverprofile
+vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# OpenWrt build
+build/
+.tmp/
