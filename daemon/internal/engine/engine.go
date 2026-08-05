@@ -28,6 +28,16 @@ func (e *Engine) Name() string {
 	return e.name
 }
 
+// SetName updates the engine name.
+func (e *Engine) SetName(name string) {
+	if name == "" {
+		name = "xray"
+	}
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.name = name
+}
+
 // Start marks the engine as running.
 func (e *Engine) Start(ctx context.Context) error {
 	_ = ctx
@@ -45,6 +55,13 @@ func (e *Engine) Stop() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.running = false
+}
+
+// Running reports whether the engine is active.
+func (e *Engine) Running() bool {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.running
 }
 
 // Status returns a compact engine status string.
