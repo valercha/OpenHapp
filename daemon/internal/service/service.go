@@ -12,10 +12,11 @@ import (
 
 // Service coordinates the lifecycle of the daemon subsystems.
 type Service struct {
-	mu     sync.Mutex
-	cfg    config.Config
-	state  *state.State
+	mu      sync.Mutex
+	cfg     config.Config
+	state   *state.State
 	running bool
+	cancel  context.CancelFunc
 }
 
 // New creates a new service manager.
@@ -36,11 +37,13 @@ func (s *Service) Start(ctx context.Context) error {
 		return fmt.Errorf("service state is nil")
 	}
 
+	loopCtx, cancel := context.WithCancel(ctx)
+	s.cancel = cancel
 	s.running = true
 	s.state.Start()
 	s.state.SetMode(s.cfg.Mode)
 
-	go s.loop(ctx)
+	go s.loop(loopCtx)
 	return nil
 }
 
@@ -53,9 +56,31 @@ func (s *Service) Stop() {
 		return
 	}
 
+	if s.cancel != nil {
+		s.cancel()
+		s.cancel = nil
+	}
+
 	s.running = false
 	if s.state != nil {
 		s.state.Stop()
+	}
+}
+
+// Config returns a copy of the runtime configuration.
+func (s *Service) Config() config.Config {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.cfg
+}
+
+// UpdateConfig updates the runtime configuration used by the service.
+func (s *Service) UpdateConfig(cfg config.Config) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.cfg = cfg
+	if s.state != nil {
+		s.state.SetMode(cfg.Mode)
 	}
 }
 
@@ -66,7 +91,6 @@ func (s *Service) loop(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			s.Stop()
 			return
 		case <-ticker.C:
 			if s.state != nil {
