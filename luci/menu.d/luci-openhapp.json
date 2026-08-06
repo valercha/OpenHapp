@@ -1,0 +1,10 @@
+{
+  "admin/services/openhapp": {
+    "title": "OpenHapp",
+    "order": 90,
+    "action": {
+      "type": "view",
+      "path": "openhapp/dashboard"
+    }
+  }
+}
