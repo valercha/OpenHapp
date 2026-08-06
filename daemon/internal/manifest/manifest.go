@@ -37,6 +37,11 @@ func Default(version string, cfg config.Config) Manifest {
 	}
 }
 
+// FromConfig builds a manifest directly from a runtime config snapshot.
+func FromConfig(version string, cfg config.Config) Manifest {
+	return Default(version, cfg)
+}
+
 // JSON returns a stable JSON representation of the manifest.
 func (m Manifest) JSON() string {
 	data, err := json.MarshalIndent(m, "", "  ")
