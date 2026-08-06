@@ -8,6 +8,10 @@ PKG_NAME:=openhapp
 PKG_VERSION:=0.1.0
 PKG_RELEASE:=1
 
+# These variables are placeholders for the real OpenWrt package build system.
+# They will be replaced by package-specific metadata files and package.mk
+# integration in the next packaging sprint.
+
 .PHONY: all
 all:
 	@echo "OpenHapp packaging scaffold ready"
