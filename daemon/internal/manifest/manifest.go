@@ -3,6 +3,8 @@ package manifest
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/valercha/OpenHapp/daemon/internal/config"
 )
 
 // Manifest describes the runtime identity of OpenHapp.
@@ -16,10 +18,12 @@ type Manifest struct {
 }
 
 // Default returns the default manifest for the current build.
-func Default(version, engine, mode string) Manifest {
+func Default(version string, cfg config.Config) Manifest {
+	engine := cfg.Engine
 	if engine == "" {
 		engine = "xray"
 	}
+	mode := cfg.Mode
 	if mode == "" {
 		mode = "proxy"
 	}
