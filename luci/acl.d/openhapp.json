@@ -1,0 +1,15 @@
+{
+	"luci-app-openhapp": {
+		"description": "OpenHapp LuCI access control",
+		"read": {
+			"ubus": {
+				"openhapp": [ "status", "manifest", "config" ]
+			}
+		},
+		"write": {
+			"ubus": {
+				"openhapp": [ "start", "stop", "restart", "apply" ]
+			}
+		}
+	}
+}
