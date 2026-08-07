@@ -19,8 +19,8 @@ type Server struct {
 }
 
 // New creates a new ubus server façade.
-func New(svc *service.Service, st *state.State, cfg config.Config, man manifest.Manifest) *Server {
-	return &Server{svc: svc, st: st, cfg: cfg, manifest: man}
+func New(svc *service.Service, st *state.State, cfg config.Config, m manifest.Manifest) *Server {
+	return &Server{svc: svc, st: st, cfg: cfg, manifest: m}
 }
 
 // Start initializes the ubus façade.
