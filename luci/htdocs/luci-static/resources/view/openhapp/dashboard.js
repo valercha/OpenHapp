@@ -38,6 +38,7 @@ return view.extend({
 		var runtimeState = status.running ? _('running') : _('stopped');
 		var manifestVersion = manifest.version || '-';
 		var manifestUpdatedAt = manifest.updated_at || '-';
+		var manifestName = manifest.name || 'OpenHapp';
 
 		return E('div', { 'class': 'cbi-map' }, [
 			E('h2', {}, _('OpenHapp Dashboard')),
@@ -48,6 +49,7 @@ return view.extend({
 				E('p', {}, [ E('strong', {}, _('Mode: ')), mode ]),
 				E('p', {}, [ E('strong', {}, _('Listen: ')), listen ]),
 				E('p', {}, [ E('strong', {}, _('Subscription: ')), subscription || _('none') ]),
+				E('p', {}, [ E('strong', {}, _('Manifest: ')), manifestName ]),
 				E('p', {}, [ E('strong', {}, _('Manifest version: ')), manifestVersion ]),
 				E('p', {}, [ E('strong', {}, _('Manifest updated: ')), manifestUpdatedAt ])
 			])
