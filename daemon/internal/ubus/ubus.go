@@ -19,8 +19,8 @@ type Server struct {
 }
 
 // New creates a new ubus server façade.
-func New(svc *service.Service, st *state.State, cfg config.Config, mf manifest.Manifest) *Server {
-	return &Server{svc: svc, st: st, cfg: cfg, manifest: mf}
+func New(svc *service.Service, st *state.State, cfg config.Config, man manifest.Manifest) *Server {
+	return &Server{svc: svc, st: st, cfg: cfg, manifest: man}
 }
 
 // Start initializes the ubus façade.
@@ -52,7 +52,7 @@ func (s *Server) Config() config.Config {
 	return s.cfg
 }
 
-// Manifest returns the runtime manifest snapshot.
+// Manifest returns the current runtime manifest snapshot.
 func (s *Server) Manifest() manifest.Manifest {
 	return s.manifest
 }
