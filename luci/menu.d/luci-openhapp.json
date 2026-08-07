@@ -5,6 +5,16 @@
     "action": {
       "type": "view",
       "path": "openhapp/dashboard"
+    },
+    "children": {
+      "actions": {
+        "title": "Actions",
+        "order": 10,
+        "action": {
+          "type": "view",
+          "path": "openhapp/actions"
+        }
+      }
     }
   }
 }
