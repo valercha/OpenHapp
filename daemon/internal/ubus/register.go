@@ -38,6 +38,8 @@ func (d *Dispatcher) Dispatch(ctx context.Context, method string) (any, error) {
 		return d.srv.ConfigRPC(), nil
 	case "manifest":
 		return d.srv.ManifestRPC(), nil
+	case "snapshot":
+		return d.srv.SnapshotRPC(), nil
 	default:
 		return nil, fmt.Errorf("unknown ubus method: %s", method)
 	}
