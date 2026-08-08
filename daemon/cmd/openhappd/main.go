@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
+	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
@@ -20,8 +21,9 @@ func main() {
 
 	st := state.New(version.String())
 	cfg := config.Default()
+	m := manifest.FromConfig(version.String(), cfg).WithTimestamp()
 	svc := service.New(cfg, st)
-	bus := ubus.New(svc, cfg, st)
+	bus := ubus.New(svc, st, cfg, m)
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
@@ -30,6 +32,9 @@ func main() {
 			return
 		case "status":
 			log.Printf("status: %+v", bus.Status())
+			return
+		case "manifest":
+			log.Printf("manifest: %s", bus.Manifest().JSON())
 			return
 		}
 	}
