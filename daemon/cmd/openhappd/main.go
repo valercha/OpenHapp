@@ -19,8 +19,10 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("openhappd %s starting", version.String())
 
-	st := state.New(version.String())
 	cfg := config.Default()
+	st := state.New(version.String())
+	st.SetEngine(cfg.Engine)
+	st.SetMode(cfg.Mode)
 	m := manifest.FromConfig(version.String(), cfg).WithTimestamp()
 	svc := service.New(cfg, st)
 	bus := ubus.New(svc, st, cfg, m)
@@ -38,6 +40,9 @@ func main() {
 			return
 		case "config":
 			log.Printf("config: %+v", bus.Config())
+			return
+		case "snapshot":
+			log.Printf("snapshot: %+v", bus.Snapshot())
 			return
 		}
 	}
