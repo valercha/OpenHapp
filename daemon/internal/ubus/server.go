@@ -27,45 +27,78 @@ func New(svc *service.Service, st *state.State, cfg config.Config, m manifest.Ma
 
 // Start registers the runtime and starts the service loop.
 func (s *Server) Start(ctx context.Context) error {
-	if s.svc == nil {
+	s.mu.RLock()
+	svc := s.svc
+	s.mu.RUnlock()
+
+	if svc == nil {
 		return fmt.Errorf("service is nil")
 	}
-	return s.svc.Start(ctx)
+
+	return svc.Start(ctx)
 }
 
 // Stop stops the underlying service.
 func (s *Server) Stop() {
-	if s.svc != nil {
-		s.svc.Stop()
+	s.mu.RLock()
+	svc := s.svc
+	s.mu.RUnlock()
+
+	if svc != nil {
+		svc.Stop()
 	}
 }
 
 // Status returns the current runtime snapshot.
 func (s *Server) Status() state.Snapshot {
-	if s.svc != nil {
-		return s.svc.Snapshot().State
+	s.mu.RLock()
+	svc := s.svc
+	st := s.st
+	s.mu.RUnlock()
+
+	if svc != nil {
+		snap := svc.Snapshot()
+		return state.Snapshot{
+			Running: snap.Running,
+			Mode:    snap.Config.Mode,
+			Engine:  snap.Config.Engine,
+			Version: snap.Config.Version,
+		}
 	}
-	if s.st == nil {
+	if st == nil {
 		return state.Snapshot{}
 	}
-	return s.st.Snapshot()
+	return st.Snapshot()
 }
 
 // Config returns the current runtime configuration snapshot.
 func (s *Server) Config() config.Config {
-	if s.svc != nil {
-		return s.svc.Config()
+	s.mu.RLock()
+	svc := s.svc
+	cfg := s.cfg
+	s.mu.RUnlock()
+
+	if svc != nil {
+		return svc.Config()
 	}
-	return s.cfg
+	return cfg
 }
 
 // Manifest returns the current runtime manifest snapshot.
 func (s *Server) Manifest() manifest.Manifest {
-	if s.manifest.Name == "" || s.manifest.Version == "" {
-		cfg := s.Config()
+	s.mu.RLock()
+	m := s.manifest
+	cfg := s.cfg
+	svc := s.svc
+	s.mu.RUnlock()
+
+	if m.Name == "" || m.Version == "" {
+		if svc != nil {
+			cfg = svc.Config()
+		}
 		return manifest.FromConfig("0.1.0-dev", cfg).WithTimestamp()
 	}
-	return s.manifest.WithTimestamp()
+	return m.WithTimestamp()
 }
 
 // StartRPC is a compatibility alias for ubus method dispatch.
