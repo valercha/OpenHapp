@@ -42,6 +42,7 @@ func (s *Service) Start(ctx context.Context) error {
 	s.running = true
 	s.state.Start()
 	s.state.SetMode(s.cfg.Mode)
+	s.state.SetEngine(s.cfg.Engine)
 
 	go s.loop(loopCtx)
 	return nil
@@ -88,6 +89,7 @@ func (s *Service) UpdateConfig(cfg config.Config) {
 	s.cfg = cfg
 	if s.state != nil {
 		s.state.SetMode(cfg.Mode)
+		s.state.SetEngine(cfg.Engine)
 	}
 }
 
