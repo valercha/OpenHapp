@@ -49,6 +49,9 @@ func (s *Server) Status() state.Snapshot {
 
 // Config returns the current runtime configuration snapshot.
 func (s *Server) Config() config.Config {
+	if s.svc != nil {
+		return s.svc.Config()
+	}
 	return s.cfg
 }
 
