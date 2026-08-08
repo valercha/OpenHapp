@@ -67,6 +67,13 @@ func (s *Service) Stop() {
 	}
 }
 
+// Running reports whether the service is active.
+func (s *Service) Running() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.running
+}
+
 // Config returns a copy of the runtime configuration.
 func (s *Service) Config() config.Config {
 	s.mu.Lock()
@@ -81,6 +88,22 @@ func (s *Service) UpdateConfig(cfg config.Config) {
 	s.cfg = cfg
 	if s.state != nil {
 		s.state.SetMode(cfg.Mode)
+	}
+}
+
+// Snapshot returns a stable service snapshot.
+type Snapshot struct {
+	Running bool          `json:"running"`
+	Config  config.Config `json:"config"`
+}
+
+// Snapshot returns the current service state.
+func (s *Service) Snapshot() Snapshot {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return Snapshot{
+		Running: s.running,
+		Config:  s.cfg,
 	}
 }
 
