@@ -41,6 +41,9 @@ func (s *Server) Stop() {
 
 // Status returns the current runtime snapshot.
 func (s *Server) Status() state.Snapshot {
+	if s.svc != nil {
+		return s.svc.Snapshot()
+	}
 	if s.st == nil {
 		return state.Snapshot{}
 	}
@@ -62,6 +65,7 @@ func (s *Server) Manifest() manifest.Manifest {
 			cfg := s.svc.Config()
 			return manifest.FromConfig("0.1.0-dev", cfg).WithTimestamp()
 		}
+		return manifest.FromConfig("0.1.0-dev", s.cfg).WithTimestamp()
 	}
-	return s.manifest
+	return s.manifest.WithTimestamp()
 }
