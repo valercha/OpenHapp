@@ -67,27 +67,27 @@ func (s *Server) Manifest() manifest.Manifest {
 	return s.manifest.WithTimestamp()
 }
 
-// StartRPC mirrors the future ubus method name.
+// StartRPC is a compatibility alias for future ubus dispatch wiring.
 func (s *Server) StartRPC(ctx context.Context) error {
 	return s.Start(ctx)
 }
 
-// StopRPC mirrors the future ubus method name.
+// StopRPC is a compatibility alias for future ubus dispatch wiring.
 func (s *Server) StopRPC() {
 	s.Stop()
 }
 
-// StatusRPC mirrors the future ubus method name.
+// StatusRPC returns the same runtime snapshot used by the future ubus method.
 func (s *Server) StatusRPC() state.Snapshot {
 	return s.Status()
 }
 
-// ManifestRPC mirrors the future ubus method name.
-func (s *Server) ManifestRPC() manifest.Manifest {
-	return s.Manifest()
-}
-
-// ConfigRPC mirrors the future ubus method name.
+// ConfigRPC returns the same runtime configuration snapshot used by the future ubus method.
 func (s *Server) ConfigRPC() config.Config {
 	return s.Config()
+}
+
+// ManifestRPC returns the same runtime manifest snapshot used by the future ubus method.
+func (s *Server) ManifestRPC() manifest.Manifest {
+	return s.Manifest()
 }
