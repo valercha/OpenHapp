@@ -95,6 +95,15 @@ func (s *Server) Manifest() manifest.Manifest {
 	return m.WithTimestamp()
 }
 
+// Snapshot returns all current runtime data in one object.
+func (s *Server) Snapshot() map[string]any {
+	return map[string]any{
+		"status":   s.Status(),
+		"config":   s.Config(),
+		"manifest": s.Manifest(),
+	}
+}
+
 // StartRPC is a compatibility alias for future ubus dispatch wiring.
 func (s *Server) StartRPC(ctx context.Context) error { return s.Start(ctx) }
 
