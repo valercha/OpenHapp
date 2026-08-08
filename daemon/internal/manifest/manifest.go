@@ -42,7 +42,7 @@ func FromConfig(version string, cfg config.Config) Manifest {
 	return Default(version, cfg)
 }
 
-// WithTimestamp returns a copy of the manifest with UpdatedAt set to now.
+// WithTimestamp returns a copy of the manifest with a refreshed timestamp.
 func (m Manifest) WithTimestamp() Manifest {
 	m.UpdatedAt = time.Now().UTC()
 	return m
