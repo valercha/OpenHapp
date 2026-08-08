@@ -25,7 +25,10 @@ func (d *Dispatcher) Dispatch(ctx context.Context, method string) (any, error) {
 
 	switch method {
 	case "start":
-		return map[string]any{"result": "ok"}, d.srv.StartRPC(ctx)
+		if err := d.srv.StartRPC(ctx); err != nil {
+			return map[string]any{"result": "error", "error": err.Error()}, err
+		}
+		return map[string]any{"result": "ok"}, nil
 	case "stop":
 		d.srv.StopRPC()
 		return map[string]any{"result": "ok"}, nil
