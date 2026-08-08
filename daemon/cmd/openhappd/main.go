@@ -36,6 +36,9 @@ func main() {
 		case "manifest":
 			log.Printf("manifest: %s", bus.Manifest().JSON())
 			return
+		case "config":
+			log.Printf("config: %+v", bus.Config())
+			return
 		}
 	}
 
