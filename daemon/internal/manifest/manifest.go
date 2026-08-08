@@ -42,6 +42,12 @@ func FromConfig(version string, cfg config.Config) Manifest {
 	return Default(version, cfg)
 }
 
+// WithTimestamp returns a copy of the manifest with UpdatedAt set to now.
+func (m Manifest) WithTimestamp() Manifest {
+	m.UpdatedAt = time.Now().UTC()
+	return m
+}
+
 // JSON returns a stable JSON representation of the manifest.
 func (m Manifest) JSON() string {
 	data, err := json.MarshalIndent(m, "", "  ")
