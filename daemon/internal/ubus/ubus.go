@@ -66,3 +66,28 @@ func (s *Server) Manifest() manifest.Manifest {
 	}
 	return s.manifest.WithTimestamp()
 }
+
+// StartRPC mirrors the future ubus method name.
+func (s *Server) StartRPC(ctx context.Context) error {
+	return s.Start(ctx)
+}
+
+// StopRPC mirrors the future ubus method name.
+func (s *Server) StopRPC() {
+	s.Stop()
+}
+
+// StatusRPC mirrors the future ubus method name.
+func (s *Server) StatusRPC() state.Snapshot {
+	return s.Status()
+}
+
+// ManifestRPC mirrors the future ubus method name.
+func (s *Server) ManifestRPC() manifest.Manifest {
+	return s.Manifest()
+}
+
+// ConfigRPC mirrors the future ubus method name.
+func (s *Server) ConfigRPC() config.Config {
+	return s.Config()
+}
