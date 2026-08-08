@@ -57,10 +57,10 @@ func (s *Server) Config() config.Config {
 
 // Manifest returns the current runtime manifest snapshot.
 func (s *Server) Manifest() manifest.Manifest {
-	if s.manifest.Name == "" && s.manifest.Version == "" {
+	if s.manifest.Name == "" || s.manifest.Version == "" {
 		if s.svc != nil {
 			cfg := s.svc.Config()
-			return manifest.FromConfig(cfg, cfg)
+			return manifest.FromConfig("0.1.0-dev", cfg).WithTimestamp()
 		}
 	}
 	return s.manifest
