@@ -3,6 +3,7 @@ package ubus
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
@@ -12,6 +13,7 @@ import (
 
 // Server is a minimal ubus-compatible façade for future RPC wiring.
 type Server struct {
+	mu       sync.Mutex
 	svc      *service.Service
 	st       *state.State
 	cfg      config.Config
@@ -25,6 +27,9 @@ func New(svc *service.Service, st *state.State, cfg config.Config, m manifest.Ma
 
 // Start initializes the ubus façade.
 func (s *Server) Start(ctx context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.svc == nil {
 		return fmt.Errorf("service is nil")
 	}
@@ -34,6 +39,9 @@ func (s *Server) Start(ctx context.Context) error {
 
 // Stop stops the underlying service.
 func (s *Server) Stop() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.svc != nil {
 		s.svc.Stop()
 	}
@@ -41,6 +49,9 @@ func (s *Server) Stop() {
 
 // Status returns the current runtime snapshot.
 func (s *Server) Status() state.Snapshot {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.svc != nil {
 		return s.svc.Snapshot()
 	}
@@ -52,6 +63,9 @@ func (s *Server) Status() state.Snapshot {
 
 // Config returns the current runtime configuration snapshot.
 func (s *Server) Config() config.Config {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.svc != nil {
 		return s.svc.Config()
 	}
@@ -60,6 +74,9 @@ func (s *Server) Config() config.Config {
 
 // Manifest returns the current runtime manifest snapshot.
 func (s *Server) Manifest() manifest.Manifest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.manifest.Name == "" || s.manifest.Version == "" {
 		cfg := s.Config()
 		return manifest.FromConfig("0.1.0-dev", cfg).WithTimestamp()
