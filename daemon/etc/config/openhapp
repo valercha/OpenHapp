@@ -1,0 +1,8 @@
+config openhapp 'main'
+	option enabled '1'
+	option engine 'xray'
+	option mode 'proxy'
+	option log_level 'info'
+	option listen '127.0.0.1:0'
+	option autostart '1'
+	option subscription ''
