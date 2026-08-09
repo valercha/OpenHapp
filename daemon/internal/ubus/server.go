@@ -11,6 +11,13 @@ import (
 	"github.com/valercha/OpenHapp/daemon/internal/state"
 )
 
+// Snapshot holds the daemon runtime data in one payload.
+type Snapshot struct {
+	Status   state.Snapshot    `json:"status"`
+	Config   config.Config     `json:"config"`
+	Manifest manifest.Manifest `json:"manifest"`
+}
+
 // Server is the OpenHapp ubus-facing runtime façade.
 type Server struct {
 	mu       sync.RWMutex
@@ -108,13 +115,6 @@ func (s *Server) Snapshot() Snapshot {
 		Config:   s.Config(),
 		Manifest: s.Manifest(),
 	}
-}
-
-// Snapshot holds the daemon runtime data in one payload.
-type Snapshot struct {
-	Status   state.Snapshot   `json:"status"`
-	Config   config.Config    `json:"config"`
-	Manifest manifest.Manifest `json:"manifest"`
 }
 
 // StartRPC is a compatibility alias for ubus method dispatch.
