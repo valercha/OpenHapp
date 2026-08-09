@@ -101,27 +101,36 @@ func (s *Server) Manifest() manifest.Manifest {
 	return m.WithTimestamp()
 }
 
-// StartRPC is a compatibility alias for ubus method dispatch.
-func (s *Server) StartRPC(ctx context.Context) error {
-	return s.Start(ctx)
+// Snapshot returns the full runtime payload used by UI and future ubus dispatch.
+func (s *Server) Snapshot() Snapshot {
+	return Snapshot{
+		Status:   s.Status(),
+		Config:   s.Config(),
+		Manifest: s.Manifest(),
+	}
 }
+
+// Snapshot holds the daemon runtime data in one payload.
+type Snapshot struct {
+	Status   state.Snapshot   `json:"status"`
+	Config   config.Config    `json:"config"`
+	Manifest manifest.Manifest `json:"manifest"`
+}
+
+// StartRPC is a compatibility alias for ubus method dispatch.
+func (s *Server) StartRPC(ctx context.Context) error { return s.Start(ctx) }
 
 // StopRPC is a compatibility alias for ubus method dispatch.
-func (s *Server) StopRPC() {
-	s.Stop()
-}
+func (s *Server) StopRPC() { s.Stop() }
 
 // StatusRPC returns the same runtime snapshot used by ubus method dispatch.
-func (s *Server) StatusRPC() state.Snapshot {
-	return s.Status()
-}
+func (s *Server) StatusRPC() state.Snapshot { return s.Status() }
 
 // ConfigRPC returns the same runtime configuration snapshot used by ubus method dispatch.
-func (s *Server) ConfigRPC() config.Config {
-	return s.Config()
-}
+func (s *Server) ConfigRPC() config.Config { return s.Config() }
 
 // ManifestRPC returns the same runtime manifest snapshot used by ubus method dispatch.
-func (s *Server) ManifestRPC() manifest.Manifest {
-	return s.Manifest()
-}
+func (s *Server) ManifestRPC() manifest.Manifest { return s.Manifest() }
+
+// SnapshotRPC returns the full runtime payload used by UI and future ubus method dispatch.
+func (s *Server) SnapshotRPC() Snapshot { return s.Snapshot() }
