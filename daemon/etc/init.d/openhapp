@@ -6,18 +6,35 @@ STOP=10
 
 PROG=/usr/bin/openhappd
 NAME=openhappd
+CONFIG=openhapp
+
+load_config() {
+	config_load "$CONFIG"
+	config_get_bool ENABLED main enabled 1
+	config_get ENGINE main engine xray
+	config_get MODE main mode proxy
+	config_get LOG_LEVEL main log_level info
+	config_get LISTEN main listen 127.0.0.1:0
+	config_get_bool AUTOSTART main autostart 1
+	config_get SUBSCRIPTION main subscription ""
+}
 
 start_service() {
+	load_config
+
+	[ "$ENABLED" = "1" ] || return 0
+
 	procd_open_instance
 	procd_set_param command "$PROG"
 	procd_set_param respawn 3600 5 5
 	procd_set_param stdout 1
 	procd_set_param stderr 1
+	procd_set_param env OPENHAPP_ENGINE="$ENGINE" OPENHAPP_MODE="$MODE" OPENHAPP_LOG_LEVEL="$LOG_LEVEL" OPENHAPP_LISTEN="$LISTEN" OPENHAPP_SUBSCRIPTION="$SUBSCRIPTION"
 	procd_close_instance
 }
 
 service_triggers() {
-	procd_add_reload_trigger "openhapp"
+	procd_add_reload_trigger "$CONFIG"
 }
 
 reload_service() {
