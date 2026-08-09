@@ -23,13 +23,19 @@ start_service() {
 	load_config
 
 	[ "$ENABLED" = "1" ] || return 0
+	[ "$AUTOSTART" = "1" ] || return 0
 
 	procd_open_instance
 	procd_set_param command "$PROG"
 	procd_set_param respawn 3600 5 5
 	procd_set_param stdout 1
 	procd_set_param stderr 1
-	procd_set_param env OPENHAPP_ENGINE="$ENGINE" OPENHAPP_MODE="$MODE" OPENHAPP_LOG_LEVEL="$LOG_LEVEL" OPENHAPP_LISTEN="$LISTEN" OPENHAPP_SUBSCRIPTION="$SUBSCRIPTION"
+	procd_set_param env \
+		OPENHAPP_ENGINE="$ENGINE" \
+		OPENHAPP_MODE="$MODE" \
+		OPENHAPP_LOG_LEVEL="$LOG_LEVEL" \
+		OPENHAPP_LISTEN="$LISTEN" \
+		OPENHAPP_SUBSCRIPTION="$SUBSCRIPTION"
 	procd_close_instance
 }
 
