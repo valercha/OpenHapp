@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -87,25 +88,29 @@ func (s *Store) Load() (config.Config, error) {
 	return cfg, nil
 }
 
+func escapeUCIValue(v string) string {
+	return strings.ReplaceAll(v, "'", "\\'")
+}
+
 // Save persists the runtime config into a minimal UCI file.
 func (s *Store) Save(cfg config.Config) error {
 	s.mu.RLock()
 	path := s.path
 	s.mu.RUnlock()
 
-	if err := os.MkdirAll("/etc/config", 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("ensure config dir: %w", err)
 	}
 
-	content := strings.Builder{}
+	var content strings.Builder
 	content.WriteString("config openhapp 'main'\n")
 	content.WriteString(fmt.Sprintf("\toption enabled '%t'\n", cfg.Enabled))
 	content.WriteString(fmt.Sprintf("\toption autostart '%t'\n", cfg.Autostart))
-	content.WriteString(fmt.Sprintf("\toption engine '%s'\n", cfg.Engine))
-	content.WriteString(fmt.Sprintf("\toption mode '%s'\n", cfg.Mode))
-	content.WriteString(fmt.Sprintf("\toption log_level '%s'\n", cfg.LogLevel))
-	content.WriteString(fmt.Sprintf("\toption listen '%s'\n", cfg.Listen))
-	content.WriteString(fmt.Sprintf("\toption subscription '%s'\n", cfg.Subscription))
+	content.WriteString(fmt.Sprintf("\toption engine '%s'\n", escapeUCIValue(cfg.Engine)))
+	content.WriteString(fmt.Sprintf("\toption mode '%s'\n", escapeUCIValue(cfg.Mode)))
+	content.WriteString(fmt.Sprintf("\toption log_level '%s'\n", escapeUCIValue(cfg.LogLevel)))
+	content.WriteString(fmt.Sprintf("\toption listen '%s'\n", escapeUCIValue(cfg.Listen)))
+	content.WriteString(fmt.Sprintf("\toption subscription '%s'\n", escapeUCIValue(cfg.Subscription)))
 
 	return os.WriteFile(path, []byte(content.String()), 0o644)
 }
