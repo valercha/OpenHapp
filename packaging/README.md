@@ -25,6 +25,24 @@ The first release focuses on a minimal but functional runtime package that can:
 - persist settings through UCI
 - expose runtime state through ubus
 - ship a wrapper binary path for installation consistency
+- bootstrap defaults on first install via `uci-defaults`
+
+## Runtime package responsibilities
+
+The `openhapp` package is responsible for:
+- installing the daemon binary and wrapper
+- placing the `procd` init script
+- installing the UCI config file
+- applying first-run defaults
+- exposing runtime state and config through the daemon API
+
+## LuCI package responsibilities
+
+The `openhapp-luci` package is responsible for:
+- installing the LuCI menu entry
+- exposing the dashboard and control views
+- installing ACL permissions for rpcd/ubus access
+- reading runtime snapshot data from the daemon
 
 ## Next artifacts
 
