@@ -11,6 +11,7 @@ import (
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
+	"github.com/valercha/OpenHapp/daemon/internal/uci"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
 	"github.com/valercha/OpenHapp/daemon/internal/version"
 )
@@ -19,7 +20,13 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("openhappd %s starting", version.String())
 
-	cfg := config.Default()
+	store := uci.New("/etc/config/openhapp")
+	cfg, err := store.Load()
+	if err != nil {
+		log.Printf("failed to load UCI config, falling back to defaults: %v", err)
+		cfg = config.Default()
+	}
+
 	st := state.New(version.String())
 	st.SetEngine(cfg.Engine)
 	st.SetMode(cfg.Mode)
@@ -56,5 +63,8 @@ func main() {
 
 	<-ctx.Done()
 	bus.Stop()
+	if err := store.Save(bus.Config()); err != nil {
+		log.Printf("failed to persist UCI config: %v", err)
+	}
 	log.Printf("openhappd stopped: %+v", bus.Status())
 }
