@@ -117,6 +117,28 @@ func (s *Server) Snapshot() Snapshot {
 	}
 }
 
+// SaveState updates the live runtime snapshot cached in the façade.
+func (s *Server) SaveState(cfg config.Config, st state.Snapshot, m manifest.Manifest) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.cfg = cfg
+	s.st = &state.State{}
+	s.st.SetEngine(st.Engine)
+	s.st.SetMode(st.Mode)
+	if st.Running {
+		s.st.Start()
+	} else {
+		s.st.Stop()
+	}
+	s.st.SetVersion(st.Version)
+	s.manifest = m
+}
+
+// LoadConfig returns the current runtime config as a persistence helper.
+func (s *Server) LoadConfig() config.Config {
+	return s.Config()
+}
+
 // StartRPC is a compatibility alias for ubus method dispatch.
 func (s *Server) StartRPC(ctx context.Context) error { return s.Start(ctx) }
 
