@@ -10,7 +10,7 @@ OPENHAPP_PKG_RELEASE:=1
 OPENHAPP_PKG_TITLE:=OpenHapp Runtime Daemon
 OPENHAPP_PKG_DESCRIPTION:=Modern OpenWrt VPN client runtime daemon with ubus and LuCI integration
 OPENHAPP_PKG_DEPENDS:=+libubox +libubus +procd
-OPENHAPP_PKG_FILES:=/usr/bin/openhappd /usr/bin/openhappd-wrapper /etc/init.d/openhapp /etc/config/openhapp
+OPENHAPP_PKG_FILES:=/usr/bin/openhappd /usr/bin/openhappd-wrapper /etc/init.d/openhapp /etc/config/openhapp /etc/uci-defaults/99-openhapp
 
 OPENHAPP_LUCI_PKG_NAME:=openhapp-luci
 OPENHAPP_LUCI_PKG_VERSION:=0.1.0
@@ -18,7 +18,7 @@ OPENHAPP_LUCI_PKG_RELEASE:=1
 OPENHAPP_LUCI_PKG_TITLE:=OpenHapp LuCI UI
 OPENHAPP_LUCI_PKG_DESCRIPTION:=LuCI web interface for OpenHapp runtime control and status
 OPENHAPP_LUCI_PKG_DEPENDS:=+luci-base +rpcd +uhttpd
-OPENHAPP_LUCI_PKG_FILES:=/www/luci-static/resources/view/openhapp /usr/share/rpcd/acl.d/openhapp.json /etc/config/openhapp
+OPENHAPP_LUCI_PKG_FILES:=/www/luci-static/resources/view/openhapp /usr/share/rpcd/acl.d/openhapp.json /etc/config/openhapp /etc/uci-defaults/99-openhapp
 
 .PHONY: print
 print:
