@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
 )
@@ -17,6 +18,7 @@ const defaultSocketPath = "/var/run/openhapp.sock"
 type Server struct {
 	mu         sync.Mutex
 	svc        *service.Service
+	manifest   manifest.Manifest
 	socketPath string
 	listener   net.Listener
 }
@@ -31,11 +33,11 @@ type Response struct {
 	Error  string `json:"error,omitempty"`
 }
 
-func NewServer(svc *service.Service, socketPath string) *Server {
+func NewServer(svc *service.Service, m manifest.Manifest, socketPath string) *Server {
 	if socketPath == "" {
 		socketPath = defaultSocketPath
 	}
-	return &Server{svc: svc, socketPath: socketPath}
+	return &Server{svc: svc, manifest: m, socketPath: socketPath}
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -99,7 +101,7 @@ func (s *Server) handleConn(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	srv := ubus.New(s.svc, nil, s.svc.Config(), ubus.DefaultManifest(s.svc.Config()))
+	srv := ubus.New(s.svc, nil, s.svc.Config(), s.manifest)
 	dispatcher := ubus.NewDispatcher(srv)
 	result, err := dispatcher.Dispatch(ctx, req.Method)
 	resp := Response{Result: result}
