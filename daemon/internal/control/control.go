@@ -81,7 +81,9 @@ func (s *Server) acceptLoop(ctx context.Context, ln net.Listener) {
 			case <-ctx.Done():
 				return
 			default:
-				continue
+				// A listener error while the context is still active is terminal;
+				// retrying indefinitely can spin at 100% CPU and hide the failure.
+				return
 			}
 		}
 		go s.handleConn(ctx, conn)
