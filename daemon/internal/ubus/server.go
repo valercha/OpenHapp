@@ -32,16 +32,14 @@ func New(svc *service.Service, st *state.State, cfg config.Config, m manifest.Ma
 	return &Server{svc: svc, st: st, cfg: cfg, manifest: m}
 }
 
-// Start registers the runtime and starts the service loop.
+// Start starts the service runtime.
 func (s *Server) Start(ctx context.Context) error {
 	s.mu.RLock()
 	svc := s.svc
 	s.mu.RUnlock()
-
 	if svc == nil {
 		return fmt.Errorf("service is nil")
 	}
-
 	return svc.Start(ctx)
 }
 
@@ -50,7 +48,6 @@ func (s *Server) Stop() {
 	s.mu.RLock()
 	svc := s.svc
 	s.mu.RUnlock()
-
 	if svc != nil {
 		svc.Stop()
 	}
@@ -65,12 +62,14 @@ func (s *Server) Status() state.Snapshot {
 
 	if svc != nil {
 		snap := svc.Snapshot()
-		return state.Snapshot{
-			Running: snap.Running,
-			Mode:    snap.Config.Mode,
-			Engine:  snap.Config.Engine,
-			Version: snap.Config.Version,
+		stateSnap := state.Snapshot{}
+		if st != nil {
+			stateSnap = st.Snapshot()
 		}
+		stateSnap.Running = snap.Running
+		stateSnap.Mode = snap.Config.Mode
+		stateSnap.Engine = snap.Config.Engine
+		return stateSnap
 	}
 	if st == nil {
 		return state.Snapshot{}
@@ -84,7 +83,6 @@ func (s *Server) Config() config.Config {
 	svc := s.svc
 	cfg := s.cfg
 	s.mu.RUnlock()
-
 	if svc != nil {
 		return svc.Config()
 	}
@@ -108,51 +106,25 @@ func (s *Server) Manifest() manifest.Manifest {
 	return m.WithTimestamp()
 }
 
-// Snapshot returns the full runtime payload used by UI and future ubus dispatch.
+// Snapshot returns the full runtime payload used by UI and ubus dispatch.
 func (s *Server) Snapshot() Snapshot {
-	return Snapshot{
-		Status:   s.Status(),
-		Config:   s.Config(),
-		Manifest: s.Manifest(),
-	}
+	return Snapshot{Status: s.Status(), Config: s.Config(), Manifest: s.Manifest()}
 }
 
-// SaveState updates the live runtime snapshot cached in the façade.
-func (s *Server) SaveState(cfg config.Config, st state.Snapshot, m manifest.Manifest) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.cfg = cfg
-	s.st = &state.State{}
-	s.st.SetEngine(st.Engine)
-	s.st.SetMode(st.Mode)
-	if st.Running {
-		s.st.Start()
-	} else {
-		s.st.Stop()
-	}
-	s.st.SetVersion(st.Version)
-	s.manifest = m
-}
-
-// LoadConfig returns the current runtime config as a persistence helper.
-func (s *Server) LoadConfig() config.Config {
-	return s.Config()
-}
-
-// StartRPC is a compatibility alias for ubus method dispatch.
+// StartRPC is the ubus start method.
 func (s *Server) StartRPC(ctx context.Context) error { return s.Start(ctx) }
 
-// StopRPC is a compatibility alias for ubus method dispatch.
+// StopRPC is the ubus stop method.
 func (s *Server) StopRPC() { s.Stop() }
 
-// StatusRPC returns the same runtime snapshot used by ubus method dispatch.
+// StatusRPC is the ubus status method.
 func (s *Server) StatusRPC() state.Snapshot { return s.Status() }
 
-// ConfigRPC returns the same runtime configuration snapshot used by ubus method dispatch.
+// ConfigRPC is the ubus config method.
 func (s *Server) ConfigRPC() config.Config { return s.Config() }
 
-// ManifestRPC returns the same runtime manifest snapshot used by ubus method dispatch.
+// ManifestRPC is the ubus manifest method.
 func (s *Server) ManifestRPC() manifest.Manifest { return s.Manifest() }
 
-// SnapshotRPC returns the full runtime payload used by UI and future ubus method dispatch.
+// SnapshotRPC is the ubus snapshot method.
 func (s *Server) SnapshotRPC() Snapshot { return s.Snapshot() }
