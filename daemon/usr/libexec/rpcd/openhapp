@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# OpenWrt rpcd plugin for OpenHapp.
+# The plugin keeps the transport boundary small and delegates runtime work
+# to the daemon-local JSON control endpoint.
+
+case "$1" in
+list)
+	cat <<'EOF'
+{"start": [], "stop": [], "status": [], "config": [], "manifest": [], "snapshot": []}
+EOF
+	;;
+call)
+	method="$2"
+	params="${3:-{}}"
+	request=$(printf '{"method":"%s","params":%s}' "$method" "$params")
+
+	if [ -x /usr/bin/openhappd-wrapper ]; then
+		printf '%s\n' "$request" | /usr/bin/openhappd-wrapper rpc
+	else
+		printf '{"error":"openhappd wrapper is not installed"}\n'
+		return 1 2>/dev/null || exit 1
+	fi
+	;;
+*)
+	exit 1
+	;;
+esac
