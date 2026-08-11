@@ -35,13 +35,21 @@ func main() {
 	srv := ubus.New(svc, st, cfg, m)
 	dispatcher := ubus.NewDispatcher(srv)
 
-	response, dispatchErr := dispatcher.HandleJSON(context.Background(), payload)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Keep start/stop/status operations against one in-process runtime so
+	// a single rpcd invocation cannot accidentally leave a child loop running.
+	response, dispatchErr := dispatcher.HandleJSON(ctx, payload)
 	if dispatchErr != nil && response == nil {
 		fatal(dispatchErr)
 	}
 
 	if _, err := os.Stdout.Write(response); err != nil {
 		fatal(err)
+	}
+	if err := store.Save(srv.Config()); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "openhappd-rpc: persist config: %v\n", err)
 	}
 	if dispatchErr != nil {
 		return
