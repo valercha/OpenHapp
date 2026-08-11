@@ -1,19 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"os"
 
-	"github.com/valercha/OpenHapp/daemon/internal/config"
-	"github.com/valercha/OpenHapp/daemon/internal/manifest"
-	"github.com/valercha/OpenHapp/daemon/internal/service"
-	"github.com/valercha/OpenHapp/daemon/internal/state"
-	"github.com/valercha/OpenHapp/daemon/internal/uci"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
-	"github.com/valercha/OpenHapp/daemon/internal/version"
 )
+
+const socketPath = "/var/run/openhapp.sock"
 
 func main() {
 	payload, err := io.ReadAll(os.Stdin)
@@ -21,38 +20,29 @@ func main() {
 		fatal(err)
 	}
 
-	store := uci.New("/etc/config/openhapp")
-	cfg, err := store.Load()
-	if err != nil {
-		cfg = config.Default()
+	var req ubus.Request
+	if err := json.Unmarshal(payload, &req); err != nil {
+		fatal(fmt.Errorf("decode request: %w", err))
 	}
 
-	st := state.New(version.String())
-	st.SetEngine(cfg.Engine)
-	st.SetMode(cfg.Mode)
-	svc := service.New(cfg, st)
-	m := manifest.FromConfig(version.String(), cfg)
-	srv := ubus.New(svc, st, cfg, m)
-	dispatcher := ubus.NewDispatcher(srv)
+	conn, err := net.DialTimeout("unix", socketPath, 2*1e9)
+	if err != nil {
+		fatal(fmt.Errorf("connect to OpenHapp control socket: %w", err))
+	}
+	defer conn.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	if err := json.NewEncoder(conn).Encode(req); err != nil {
+		fatal(fmt.Errorf("send request: %w", err))
+	}
 
-	// Keep start/stop/status operations against one in-process runtime so
-	// a single rpcd invocation cannot accidentally leave a child loop running.
-	response, dispatchErr := dispatcher.HandleJSON(ctx, payload)
-	if dispatchErr != nil && response == nil {
-		fatal(dispatchErr)
+	reader := bufio.NewReader(conn)
+	response, err := reader.ReadBytes('\n')
+	if err != nil {
+		fatal(fmt.Errorf("read response: %w", err))
 	}
 
 	if _, err := os.Stdout.Write(response); err != nil {
 		fatal(err)
-	}
-	if err := store.Save(srv.Config()); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "openhappd-rpc: persist config: %v\n", err)
-	}
-	if dispatchErr != nil {
-		return
 	}
 }
 
@@ -60,3 +50,5 @@ func fatal(err error) {
 	_, _ = fmt.Fprintf(os.Stderr, "openhappd-rpc: %v\n", err)
 	os.Exit(1)
 }
+
+var _ context.Context
