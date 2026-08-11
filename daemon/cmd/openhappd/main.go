@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
+	"github.com/valercha/OpenHapp/daemon/internal/control"
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
@@ -33,6 +34,7 @@ func main() {
 	m := manifest.FromConfig(version.String(), cfg).WithTimestamp()
 	svc := service.New(cfg, st)
 	bus := ubus.New(svc, st, cfg, m)
+	controlServer := control.NewServer(svc, m, "")
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
@@ -60,8 +62,13 @@ func main() {
 	if err := bus.Start(ctx); err != nil {
 		log.Fatalf("failed to start service: %v", err)
 	}
+	if err := controlServer.Start(ctx); err != nil {
+		bus.Stop()
+		log.Fatalf("failed to start control socket: %v", err)
+	}
 
 	<-ctx.Done()
+	_ = controlServer.Stop()
 	bus.Stop()
 	if err := store.Save(bus.Config()); err != nil {
 		log.Printf("failed to persist UCI config: %v", err)
