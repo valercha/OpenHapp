@@ -1,2 +1,11 @@
 #!/bin/sh
-exec /usr/bin/openhappd "$@"
+
+case "$1" in
+rpc)
+	shift
+	exec /usr/bin/openhappd-rpc "$@"
+	;;
+*)
+	exec /usr/bin/openhappd "$@"
+	;;
+esac
