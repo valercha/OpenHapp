@@ -5,17 +5,18 @@ PKG_VERSION:=0.1.0
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
+
+GO_PKG:=github.com/valercha/OpenHapp/daemon
+GO_PKG_BUILD_PKG:=$(GO_PKG)/cmd/openhappd $(GO_PKG)/cmd/openhappd-rpc
+
 include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=no-mips16
 
-GO_PKG:=github.com/valercha/OpenHapp/daemon
-GO_PKG_BUILD_PKG:=$(GO_PKG)/cmd/openhappd $(GO_PKG)/cmd/openhappd-rpc
-
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
-SOURCE_STAGE:=$(PKG_BUILD_DIR)/source
+SOURCE_STAGE:=$(PKG_BUILD_DIR)
 OPENHAPP_SOURCE_DIR?=$(CURDIR)/../../../daemon
 OPENHAPP_STAGE_SCRIPT?=$(CURDIR)/source.sh
 
