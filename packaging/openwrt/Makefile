@@ -3,6 +3,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=openhapp
 PKG_VERSION:=0.1.0
 PKG_RELEASE:=1
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -15,6 +16,24 @@ endef
 
 define Package/openhapp/description
 OpenHapp runtime daemon and OpenWrt rpcd control integration.
+endef
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) $(TOPDIR)/../daemon $(PKG_BUILD_DIR)/daemon
+	$(CP) $(TOPDIR)/../daemon/etc/init.d/openhapp $(PKG_BUILD_DIR)/openhapp.init
+	$(CP) $(TOPDIR)/../daemon/etc/config/openhapp $(PKG_BUILD_DIR)/openhapp.config
+	$(CP) $(TOPDIR)/../daemon/etc/uci-defaults/99-openhapp $(PKG_BUILD_DIR)/99-openhapp
+	$(CP) $(TOPDIR)/../daemon/usr/libexec/rpcd/openhapp $(PKG_BUILD_DIR)/rpcd-openhapp
+	$(CP) $(TOPDIR)/../daemon/usr/bin/openhappd-wrapper $(PKG_BUILD_DIR)/openhappd-wrapper
+endef
+
+define Build/Compile
+	cd $(PKG_BUILD_DIR)/daemon && \
+		GOOS=linux GOARCH=$(ARCH) CGO_ENABLED=0 \
+		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
+		GOOS=linux GOARCH=$(ARCH) CGO_ENABLED=0 \
+		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
 define Package/openhapp/install
