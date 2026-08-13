@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -26,7 +27,6 @@ func TestServerStatusOverUnixSocket(t *testing.T) {
 	if err := server.Start(ctx); err != nil {
 		t.Fatalf("start control server: %v", err)
 	}
-	defer server.Stop()
 
 	var conn net.Conn
 	var err error
@@ -52,5 +52,12 @@ func TestServerStatusOverUnixSocket(t *testing.T) {
 	}
 	if response.Error != "" {
 		t.Fatalf("unexpected error: %s", response.Error)
+	}
+
+	if err := server.Stop(); err != nil {
+		t.Fatalf("stop control server: %v", err)
+	}
+	if _, err := os.Stat(socketPath); !os.IsNotExist(err) {
+		t.Fatalf("control socket still exists after stop: %v", err)
 	}
 }
