@@ -1,29 +1,33 @@
 # OpenHapp
 
-OpenHapp is a modern, open-source VPN management platform for OpenWrt 25.12+.
+OpenHapp is a modern, open-source VPN management platform for OpenWrt.
 
-## Vision
+## Current MVP
 
-OpenHapp provides a clean LuCI interface backed by a Go daemon communicating over ubus/procd. It is designed to support Xray first, with sing-box planned as a future backend.
+The repository now contains the core runtime path needed for the first working MVP:
 
-## Roadmap
+- Go daemon (`openhappd`) with UCI-backed configuration persistence
+- long-running Unix control socket for daemon control
+- `ubus`-compatible dispatcher and JSON transport
+- OpenWrt `rpcd` plugin and RPC helper
+- `procd` service integration
+- LuCI dashboard and start/stop controls
+- LuCI ACL for the implemented `ubus` methods
+- OpenWrt package recipe for the daemon and runtime integration files
+- automated Go/JSON CI checks
 
-### Sprint 1
-- Project skeleton
-- Go daemon (openhappd)
-- LuCI integration
-- procd service
-- APK packaging
+## Architecture
 
-### Sprint 2
-- Xray integration
-- Server management
+LuCI → rpcd → `openhappd-rpc` → `/var/run/openhapp.sock` → `openhappd` → dispatcher/service/state
 
-### Sprint 3
-- VLESS subscriptions
-- Diagnostics
-- Auto failover
+UCI remains the persistent configuration source of truth.
+
+## Packaging
+
+The OpenWrt package recipe is under `packaging/openwrt/`. It stages the daemon module, builds `openhappd` and `openhappd-rpc` with the OpenWrt Go toolchain, and installs the runtime integration files.
+
+An actual OpenWrt SDK/build-tree integration test is still required before claiming release-ready status.
 
 ## Status
 
-🚧 Active development has started.
+MVP implementation is in progress. Production/release readiness depends on successful OpenWrt SDK build and router integration testing.
