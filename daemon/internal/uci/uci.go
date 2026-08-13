@@ -13,13 +13,11 @@ import (
 
 const defaultConfigPath = "/etc/config/openhapp"
 
-// Store provides a minimal UCI-backed persistence layer for OpenHapp.
 type Store struct {
 	mu   sync.RWMutex
 	path string
 }
 
-// New creates a new persistence store.
 func New(path string) *Store {
 	if strings.TrimSpace(path) == "" {
 		path = defaultConfigPath
@@ -27,14 +25,12 @@ func New(path string) *Store {
 	return &Store{path: path}
 }
 
-// Path returns the configured UCI file path.
 func (s *Store) Path() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.path
 }
 
-// Load reads the runtime config from UCI if the file exists.
 func (s *Store) Load() (config.Config, error) {
 	s.mu.RLock()
 	path := s.path
@@ -50,6 +46,7 @@ func (s *Store) Load() (config.Config, error) {
 	defer f.Close()
 
 	cfg := config.Default()
+	var section string
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -57,29 +54,36 @@ func (s *Store) Load() (config.Config, error) {
 			continue
 		}
 		fields := strings.Fields(line)
-		if len(fields) < 3 {
+		if len(fields) < 2 {
 			continue
 		}
-		if fields[0] != "option" {
-			continue
-		}
-		key := fields[1]
-		value := strings.Trim(strings.Join(fields[2:], " "), "'\"")
-		switch key {
-		case "enabled":
-			cfg.Enabled = value == "1" || strings.EqualFold(value, "true")
-		case "autostart":
-			cfg.Autostart = value == "1" || strings.EqualFold(value, "true")
-		case "engine":
-			cfg.Engine = value
-		case "mode":
-			cfg.Mode = value
-		case "log_level":
-			cfg.LogLevel = value
-		case "listen":
-			cfg.Listen = value
-		case "subscription":
-			cfg.Subscription = value
+		switch fields[0] {
+		case "config":
+			if len(fields) >= 3 && fields[1] == "openhapp" {
+				section = strings.Trim(fields[2], "'\"")
+			}
+		case "option":
+			if section != "main" || len(fields) < 3 {
+				continue
+			}
+			key := fields[1]
+			value := strings.Trim(strings.Join(fields[2:], " "), "'\"")
+			switch key {
+			case "enabled":
+				cfg.Enabled = value == "1" || strings.EqualFold(value, "true")
+			case "autostart":
+				cfg.Autostart = value == "1" || strings.EqualFold(value, "true")
+			case "engine":
+				cfg.Engine = value
+			case "mode":
+				cfg.Mode = value
+			case "log_level":
+				cfg.LogLevel = value
+			case "listen":
+				cfg.Listen = value
+			case "subscription":
+				cfg.Subscription = value
+			}
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -92,7 +96,6 @@ func escapeUCIValue(v string) string {
 	return strings.ReplaceAll(v, "'", "\\'")
 }
 
-// Save persists the runtime config into a minimal UCI file.
 func (s *Store) Save(cfg config.Config) error {
 	s.mu.RLock()
 	path := s.path
