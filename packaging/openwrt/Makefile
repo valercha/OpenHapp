@@ -30,9 +30,7 @@ endef
 
 define Build/Compile
 	cd $(PKG_BUILD_DIR)/daemon && \
-		GOOS=linux GOARCH=$(ARCH) CGO_ENABLED=0 \
 		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
-		GOOS=linux GOARCH=$(ARCH) CGO_ENABLED=0 \
 		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
