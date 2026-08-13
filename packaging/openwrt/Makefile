@@ -11,11 +11,10 @@ PKG_BUILD_DEPENDS:=golang/host
 GO_PKG:=github.com/valercha/OpenHapp/daemon
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
-
 SRC_DIR:=$(TOPDIR)/../daemon
 
-# OpenHapp is sourced from the repository checkout; the OpenWrt recipe only
-# stages the daemon module and the runtime integration files it packages.
+# The package is built from the repository checkout. Only the daemon module
+# and runtime integration files are staged into the OpenWrt build directory.
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) $(SRC_DIR)/go.mod $(PKG_BUILD_DIR)/go.mod
@@ -29,16 +28,15 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	cd $(PKG_BUILD_DIR) && \
-		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
-		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
+	cd $(PKG_BUILD_DIR) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd
+	cd $(PKG_BUILD_DIR) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
 define Package/openhapp
   SECTION:=net
   CATEGORY:=Network
   TITLE:=OpenHapp runtime daemon
-  DEPENDS:=+libubus +libuci +procd +rpcd
+  DEPENDS:=+libuci +procd +rpcd
 endef
 
 define Package/openhapp/description
