@@ -19,8 +19,8 @@ OpenHapp runtime daemon and OpenWrt rpcd control integration.
 endef
 
 define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) $(TOPDIR)/../daemon $(PKG_BUILD_DIR)/daemon
+	$(call Build/Prepare/Default)
+	$(CP) $(TOPDIR)/../daemon/* $(PKG_BUILD_DIR)/
 	$(CP) $(TOPDIR)/../daemon/etc/init.d/openhapp $(PKG_BUILD_DIR)/openhapp.init
 	$(CP) $(TOPDIR)/../daemon/etc/config/openhapp $(PKG_BUILD_DIR)/openhapp.config
 	$(CP) $(TOPDIR)/../daemon/etc/uci-defaults/99-openhapp $(PKG_BUILD_DIR)/99-openhapp
@@ -29,7 +29,7 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	cd $(PKG_BUILD_DIR)/daemon && \
+	cd $(PKG_BUILD_DIR) && \
 		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
 		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
