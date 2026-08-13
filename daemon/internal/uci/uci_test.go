@@ -1,6 +1,7 @@
 package uci
 
 import (
+	"os"
 	"testing"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
@@ -46,7 +47,7 @@ func TestLoadIgnoresOtherSections(t *testing.T) {
 		"config other 'main'\n" +
 		"\toption engine 'wrong'\n"
 
-	if err := writeTestFile(path, content); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("write test config: %v", err)
 	}
 
@@ -57,8 +58,4 @@ func TestLoadIgnoresOtherSections(t *testing.T) {
 	if got.Engine != "xray" {
 		t.Fatalf("unexpected engine: %q", got.Engine)
 	}
-}
-
-func writeTestFile(path, content string) error {
-	return writeFile(path, []byte(content))
 }
