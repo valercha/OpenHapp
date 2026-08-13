@@ -1,0 +1,26 @@
+name: OpenHapp CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  daemon:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: daemon
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: daemon/go.mod
+      - name: Test
+        run: go test ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Build daemon
+        run: go build ./cmd/openhappd
+      - name: Build rpc helper
+        run: go build ./cmd/openhappd-rpc
