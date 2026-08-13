@@ -12,11 +12,13 @@ GO_PKG:=github.com/valercha/OpenHapp/daemon
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 SOURCE_STAGE:=$(PKG_BUILD_DIR)/source
-SOURCE_DIR:=$(OPENHAPP_SOURCE_DIR)
+OPENHAPP_SOURCE_DIR?=$(TOPDIR)/../OpenHapp/daemon
+
+OPENHAPP_STAGE_SCRIPT:=$(TOPDIR)/../OpenHapp/packaging/openwrt/source.sh
 
 define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)/$(SOURCE_STAGE)
-	OPENHAPP_SOURCE_DIR="$(TOPDIR)/../daemon" $(TOPDIR)/../OpenHapp/packaging/openwrt/source.sh $(SOURCE_STAGE)
+	mkdir -p $(SOURCE_STAGE)
+	OPENHAPP_SOURCE_DIR="$(OPENHAPP_SOURCE_DIR)" $(OPENHAPP_STAGE_SCRIPT) $(SOURCE_STAGE)
 endef
 
 define Build/Compile
@@ -39,15 +41,15 @@ define Package/openhapp/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd $(1)/usr/bin/openhappd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd-rpc $(1)/usr/bin/openhappd-rpc
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/openhappd-wrapper $(1)/usr/bin/openhappd-wrapper
+	$(INSTALL_BIN) $(SOURCE_STAGE)/openhappd-wrapper $(1)/usr/bin/openhappd-wrapper
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/rpcd-openhapp $(1)/usr/libexec/rpcd/openhapp
+	$(INSTALL_BIN) $(SOURCE_STAGE)/rpcd-openhapp $(1)/usr/libexec/rpcd/openhapp
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/openhapp.init $(1)/etc/init.d/openhapp
+	$(INSTALL_BIN) $(SOURCE_STAGE)/openhapp.init $(1)/etc/init.d/openhapp
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) $(PKG_BUILD_DIR)/source/openhapp.config $(1)/etc/config/openhapp
+	$(INSTALL_CONF) $(SOURCE_STAGE)/openhapp.config $(1)/etc/config/openhapp
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/99-openhapp $(1)/etc/uci-defaults/99-openhapp
+	$(INSTALL_BIN) $(SOURCE_STAGE)/99-openhapp $(1)/etc/uci-defaults/99-openhapp
 endef
 
 $(eval $(call BuildPackage,openhapp))
