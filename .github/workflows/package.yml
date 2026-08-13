@@ -1,0 +1,40 @@
+name: OpenHapp Package Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate package layout
+        run: |
+          test -f packaging/openwrt/Makefile
+          test -x packaging/openwrt/source.sh || chmod +x packaging/openwrt/source.sh
+          test -f daemon/etc/init.d/openhapp
+          test -f daemon/etc/config/openhapp
+          test -f daemon/etc/uci-defaults/99-openhapp
+          test -f daemon/usr/libexec/rpcd/openhapp
+          test -f daemon/usr/bin/openhappd-wrapper
+      - name: Validate shell scripts
+        run: |
+          sh -n packaging/openwrt/source.sh
+          sh -n daemon/etc/init.d/openhapp
+          sh -n daemon/etc/uci-defaults/99-openhapp
+          sh -n daemon/usr/libexec/rpcd/openhapp
+          sh -n daemon/usr/bin/openhappd-wrapper
+      - name: Validate JSON
+        run: |
+          find luci -type f -name '*.json' -print0 | xargs -0 -n1 python3 -m json.tool >/dev/null
+      - name: Validate package references
+        run: |
+          grep -q 'openhappd-rpc' packaging/openwrt/Makefile
+          grep -q 'rpcd-openhapp' packaging/openwrt/Makefile
+          grep -q 'openhapp.init' packaging/openwrt/Makefile
+          grep -q 'openhapp.config' packaging/openwrt/Makefile
