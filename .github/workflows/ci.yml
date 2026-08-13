@@ -24,3 +24,6 @@ jobs:
         run: go build ./cmd/openhappd
       - name: Build rpc helper
         run: go build ./cmd/openhappd-rpc
+      - name: Verify LuCI and OpenWrt JSON assets
+        run: |
+          find ../luci -type f -name '*.json' -print0 | xargs -0 -n1 python3 -m json.tool >/dev/null
