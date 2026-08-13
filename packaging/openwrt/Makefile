@@ -5,10 +5,14 @@ PKG_VERSION:=0.1.0
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/golang.mk
+include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
 PKG_BUILD_DEPENDS:=golang/host
+PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=no-mips16
+
 GO_PKG:=github.com/valercha/OpenHapp/daemon
+GO_PKG_BUILD_PKG:=$(GO_PKG)/cmd/openhappd $(GO_PKG)/cmd/openhappd-rpc
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 SOURCE_STAGE:=$(PKG_BUILD_DIR)/source
@@ -18,11 +22,6 @@ OPENHAPP_STAGE_SCRIPT?=$(CURDIR)/source.sh
 define Build/Prepare
 	mkdir -p $(SOURCE_STAGE)
 	OPENHAPP_SOURCE_DIR="$(OPENHAPP_SOURCE_DIR)" $(OPENHAPP_STAGE_SCRIPT) $(SOURCE_STAGE)
-endef
-
-define Build/Compile
-	cd $(SOURCE_STAGE) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd
-	cd $(SOURCE_STAGE) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
 define Package/openhapp
@@ -38,8 +37,8 @@ endef
 
 define Package/openhapp/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd $(1)/usr/bin/openhappd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd-rpc $(1)/usr/bin/openhappd-rpc
+	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/openhappd $(1)/usr/bin/openhappd
+	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/openhappd-rpc $(1)/usr/bin/openhappd-rpc
 	$(INSTALL_BIN) $(SOURCE_STAGE)/openhappd-wrapper $(1)/usr/bin/openhappd-wrapper
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd
 	$(INSTALL_BIN) $(SOURCE_STAGE)/rpcd-openhapp $(1)/usr/libexec/rpcd/openhapp
@@ -51,4 +50,5 @@ define Package/openhapp/install
 	$(INSTALL_BIN) $(SOURCE_STAGE)/99-openhapp $(1)/etc/uci-defaults/99-openhapp
 endef
 
+$(eval $(call GoBinPackage,openhapp))
 $(eval $(call BuildPackage,openhapp))
