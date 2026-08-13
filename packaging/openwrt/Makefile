@@ -30,8 +30,8 @@ endef
 
 define Build/Compile
 	cd $(PKG_BUILD_DIR)/daemon && \
-		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
-		$(STAGING_DIR_HOST)/bin/go build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
+		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd && \
+		$(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
 define Package/openhapp/install
