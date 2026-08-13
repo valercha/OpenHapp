@@ -18,6 +18,7 @@ jobs:
           test -f packaging/openwrt/Makefile
           test -f packaging/openwrt/source.sh
           test -x packaging/openwrt/test-stage.sh || chmod +x packaging/openwrt/test-stage.sh
+          test -f packaging/openwrt/package-files.txt
           test -f daemon/etc/init.d/openhapp
           test -f daemon/etc/config/openhapp
           test -f daemon/etc/uci-defaults/99-openhapp
@@ -42,3 +43,15 @@ jobs:
           grep -q 'rpcd-openhapp' packaging/openwrt/Makefile
           grep -q 'openhapp.init' packaging/openwrt/Makefile
           grep -q 'openhapp.config' packaging/openwrt/Makefile
+      - name: Validate install manifest
+        run: |
+          expected=$(sed '/^$/d' packaging/openwrt/package-files.txt | sort)
+          actual=$(printf '%s\n' \
+            /usr/bin/openhappd \
+            /usr/bin/openhappd-rpc \
+            /usr/bin/openhappd-wrapper \
+            /usr/libexec/rpcd/openhapp \
+            /etc/init.d/openhapp \
+            /etc/config/openhapp \
+            /etc/uci-defaults/99-openhapp | sort)
+          test "$expected" = "$actual"
