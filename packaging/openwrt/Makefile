@@ -13,8 +13,7 @@ GO_PKG:=github.com/valercha/OpenHapp/daemon
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 SOURCE_STAGE:=$(PKG_BUILD_DIR)/source
 OPENHAPP_SOURCE_DIR?=$(TOPDIR)/../OpenHapp/daemon
-
-OPENHAPP_STAGE_SCRIPT:=$(TOPDIR)/../OpenHapp/packaging/openwrt/source.sh
+OPENHAPP_STAGE_SCRIPT?=$(CURDIR)/source.sh
 
 define Build/Prepare
 	mkdir -p $(SOURCE_STAGE)
