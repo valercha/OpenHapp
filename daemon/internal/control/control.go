@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -70,7 +71,10 @@ func (s *Server) Stop() error {
 	if ln == nil {
 		return nil
 	}
-	return ln.Close()
+	if err := ln.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+		return fmt.Errorf("close control socket: %w", err)
+	}
+	return os.Remove(s.socketPath)
 }
 
 func (s *Server) acceptLoop(ctx context.Context, ln net.Listener) {
@@ -81,8 +85,6 @@ func (s *Server) acceptLoop(ctx context.Context, ln net.Listener) {
 			case <-ctx.Done():
 				return
 			default:
-				// A listener error while the context is still active is terminal;
-				// retrying indefinitely can spin at 100% CPU and hide the failure.
 				return
 			}
 		}
