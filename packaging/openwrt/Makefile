@@ -11,25 +11,17 @@ PKG_BUILD_DEPENDS:=golang/host
 GO_PKG:=github.com/valercha/OpenHapp/daemon
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
-SRC_DIR:=$(TOPDIR)/../daemon
+SOURCE_STAGE:=$(PKG_BUILD_DIR)/source
+SOURCE_DIR:=$(OPENHAPP_SOURCE_DIR)
 
-# The package is built from the repository checkout. Only the daemon module
-# and runtime integration files are staged into the OpenWrt build directory.
 define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) $(SRC_DIR)/go.mod $(PKG_BUILD_DIR)/go.mod
-	$(CP) $(SRC_DIR)/cmd $(PKG_BUILD_DIR)/cmd
-	$(CP) $(SRC_DIR)/internal $(PKG_BUILD_DIR)/internal
-	$(CP) $(SRC_DIR)/etc/init.d/openhapp $(PKG_BUILD_DIR)/openhapp.init
-	$(CP) $(SRC_DIR)/etc/config/openhapp $(PKG_BUILD_DIR)/openhapp.config
-	$(CP) $(SRC_DIR)/etc/uci-defaults/99-openhapp $(PKG_BUILD_DIR)/99-openhapp
-	$(CP) $(SRC_DIR)/usr/libexec/rpcd/openhapp $(PKG_BUILD_DIR)/rpcd-openhapp
-	$(CP) $(SRC_DIR)/usr/bin/openhappd-wrapper $(PKG_BUILD_DIR)/openhappd-wrapper
+	mkdir -p $(PKG_BUILD_DIR)/$(SOURCE_STAGE)
+	OPENHAPP_SOURCE_DIR="$(TOPDIR)/../daemon" $(TOPDIR)/../OpenHapp/packaging/openwrt/source.sh $(SOURCE_STAGE)
 endef
 
 define Build/Compile
-	cd $(PKG_BUILD_DIR) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd
-	cd $(PKG_BUILD_DIR) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
+	cd $(SOURCE_STAGE) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd ./cmd/openhappd
+	cd $(SOURCE_STAGE) && $(GO_BIN) build -trimpath -o $(PKG_BUILD_DIR)/openhappd-rpc ./cmd/openhappd-rpc
 endef
 
 define Package/openhapp
@@ -47,15 +39,15 @@ define Package/openhapp/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd $(1)/usr/bin/openhappd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd-rpc $(1)/usr/bin/openhappd-rpc
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhappd-wrapper $(1)/usr/bin/openhappd-wrapper
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/openhappd-wrapper $(1)/usr/bin/openhappd-wrapper
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rpcd-openhapp $(1)/usr/libexec/rpcd/openhapp
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/rpcd-openhapp $(1)/usr/libexec/rpcd/openhapp
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openhapp.init $(1)/etc/init.d/openhapp
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/openhapp.init $(1)/etc/init.d/openhapp
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) $(PKG_BUILD_DIR)/openhapp.config $(1)/etc/config/openhapp
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/source/openhapp.config $(1)/etc/config/openhapp
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/99-openhapp $(1)/etc/uci-defaults/99-openhapp
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/99-openhapp $(1)/etc/uci-defaults/99-openhapp
 endef
 
 $(eval $(call BuildPackage,openhapp))
