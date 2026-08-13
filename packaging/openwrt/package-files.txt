@@ -1,0 +1,7 @@
+/usr/bin/openhappd
+/usr/bin/openhappd-rpc
+/usr/bin/openhappd-wrapper
+/usr/libexec/rpcd/openhapp
+/etc/init.d/openhapp
+/etc/config/openhapp
+/etc/uci-defaults/99-openhapp
