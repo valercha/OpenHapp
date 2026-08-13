@@ -3,10 +3,12 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=openhapp
 PKG_VERSION:=0.1.0
 PKG_RELEASE:=1
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DEPENDS:=golang/host
+GO_PKG:=github.com/valercha/OpenHapp/daemon
 
 include $(INCLUDE_DIR)/golang.mk
 
