@@ -1,0 +1,29 @@
+name: daemon
+
+on:
+  push:
+    paths:
+      - 'daemon/**'
+      - 'go.work'
+      - '.github/workflows/daemon.yml'
+  pull_request:
+    paths:
+      - 'daemon/**'
+      - 'go.work'
+      - '.github/workflows/daemon.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: daemon
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      - run: go test ./...
+      - run: go vet ./...
+      - run: go build ./cmd/openhappd
+      - run: go build ./cmd/openhappd-rpc
