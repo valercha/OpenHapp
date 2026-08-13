@@ -1,0 +1,2 @@
+# Placeholder for OpenWrt package source files. The package Makefile copies
+# source files from the repository into $(PKG_BUILD_DIR) during Prepare.
