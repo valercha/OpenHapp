@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
+	"github.com/valercha/OpenHapp/daemon/internal/engine"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
 )
 
@@ -15,6 +16,7 @@ type Service struct {
 	mu      sync.Mutex
 	cfg     config.Config
 	state   *state.State
+	engine  *engine.Engine
 	running bool
 	cancel  context.CancelFunc
 }
@@ -22,6 +24,13 @@ type Service struct {
 // New creates a new service manager.
 func New(cfg config.Config, st *state.State) *Service {
 	return &Service{cfg: cfg, state: st}
+}
+
+// SetEngine attaches the runtime engine facade.
+func (s *Service) SetEngine(eng *engine.Engine) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.engine = eng
 }
 
 // Start starts the service loop.
@@ -35,6 +44,12 @@ func (s *Service) Start(ctx context.Context) error {
 
 	if s.state == nil {
 		return fmt.Errorf("service state is nil")
+	}
+
+	if s.engine != nil {
+		if err := s.engine.Start(ctx); err != nil {
+			return fmt.Errorf("start engine: %w", err)
+		}
 	}
 
 	loopCtx, cancel := context.WithCancel(ctx)
@@ -60,6 +75,10 @@ func (s *Service) Stop() {
 	if s.cancel != nil {
 		s.cancel()
 		s.cancel = nil
+	}
+
+	if s.engine != nil {
+		s.engine.Stop()
 	}
 
 	s.running = false

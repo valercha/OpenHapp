@@ -9,11 +9,12 @@ import (
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
 	"github.com/valercha/OpenHapp/daemon/internal/control"
+	"github.com/valercha/OpenHapp/daemon/internal/engine"
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
-	"github.com/valercha/OpenHapp/daemon/internal/uci"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
+	"github.com/valercha/OpenHapp/daemon/internal/uci"
 	"github.com/valercha/OpenHapp/daemon/internal/version"
 )
 
@@ -32,7 +33,9 @@ func main() {
 	st.SetEngine(cfg.Engine)
 	st.SetMode(cfg.Mode)
 	m := manifest.FromConfig(version.String(), cfg).WithTimestamp()
+	eng := engine.New(cfg.Engine)
 	svc := service.New(cfg, st)
+	svc.SetEngine(eng)
 	bus := ubus.New(svc, st, cfg, m)
 	controlServer := control.NewServer(svc, m, "")
 
