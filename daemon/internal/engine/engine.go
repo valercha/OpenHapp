@@ -14,6 +14,17 @@ type Backend interface {
 	Running() bool
 }
 
+// Info describes the selected engine runtime.
+type Info struct {
+	Name      string `json:"name"`
+	Version   string `json:"version,omitempty"`
+	Binary    string `json:"binary,omitempty"`
+	Config    string `json:"config,omitempty"`
+	Workdir   string `json:"workdir,omitempty"`
+	Running   bool   `json:"running"`
+	Available bool   `json:"available"`
+}
+
 // Engine is the runtime facade for a selected proxy backend.
 type Engine struct {
 	mu      sync.Mutex
@@ -122,4 +133,39 @@ func (e *Engine) Status() string {
 	}
 
 	return fmt.Sprintf("engine=%s state=%s", e.name, state)
+}
+
+// Info returns details about the selected engine backend.
+func (e *Engine) Info(ctx context.Context) Info {
+	e.mu.Lock()
+	name := e.name
+	running := e.running
+	backend := e.backend
+	e.mu.Unlock()
+
+	info := Info{
+		Name:    name,
+		Running: running,
+	}
+
+	if backend == nil {
+		return info
+	}
+
+	info.Available = true
+
+	if version, err := backend.Version(ctx); err == nil {
+		info.Version = version
+	}
+
+	switch b := backend.(type) {
+	case *SingBoxBackend:
+		info.Binary = b.Binary
+		info.Config = b.Config
+		info.Workdir = b.Workdir
+		info.Available = b.Available()
+		info.Running = b.Running()
+	}
+
+	return info
 }

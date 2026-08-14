@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
+	"github.com/valercha/OpenHapp/daemon/internal/engine"
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
@@ -112,6 +113,19 @@ func (s *Server) Manifest() manifest.Manifest {
 // Snapshot returns the full runtime payload used by UI and ubus dispatch.
 func (s *Server) Snapshot() Snapshot {
 	return Snapshot{Status: s.Status(), Config: s.Config(), Manifest: s.Manifest()}
+}
+
+// EngineInfo returns details about the selected runtime engine.
+func (s *Server) EngineInfo(ctx context.Context) engine.Info {
+	s.mu.RLock()
+	svc := s.svc
+	s.mu.RUnlock()
+
+	if svc == nil {
+		return engine.Info{}
+	}
+
+	return svc.EngineInfo(ctx)
 }
 
 // StartRPC is the ubus start method.

@@ -33,6 +33,19 @@ func (s *Service) SetEngine(eng *engine.Engine) {
 	s.engine = eng
 }
 
+// EngineInfo returns information about the selected runtime engine.
+func (s *Service) EngineInfo(ctx context.Context) engine.Info {
+	s.mu.Lock()
+	eng := s.engine
+	s.mu.Unlock()
+
+	if eng == nil {
+		return engine.Info{}
+	}
+
+	return eng.Info(ctx)
+}
+
 // Start starts the service loop.
 func (s *Service) Start(ctx context.Context) error {
 	s.mu.Lock()

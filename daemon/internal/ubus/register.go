@@ -34,6 +34,8 @@ func (d *Dispatcher) Dispatch(ctx context.Context, method string) (any, error) {
 		return map[string]any{"result": "ok"}, nil
 	case "status":
 		return d.srv.StatusRPC(), nil
+	case "engine_info":
+		return d.srv.EngineInfo(ctx), nil
 	case "config":
 		return d.srv.ConfigRPC(), nil
 	case "manifest":
