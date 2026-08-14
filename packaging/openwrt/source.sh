@@ -12,7 +12,6 @@ mkdir -p "$DEST_DIR/cmd" "$DEST_DIR/internal" \
     "$DEST_DIR/etc/init.d" "$DEST_DIR/etc/config" "$DEST_DIR/etc/uci-defaults" \
     "$DEST_DIR/usr/libexec/rpcd" "$DEST_DIR/usr/bin"
 
-cp "$SOURCE_DIR/go.mod" "$DEST_DIR/go.mod"
 cp -R "$SOURCE_DIR/cmd/." "$DEST_DIR/cmd/"
 cp -R "$SOURCE_DIR/internal/." "$DEST_DIR/internal/"
 cp "$SOURCE_DIR/etc/init.d/openhapp" "$DEST_DIR/openhapp.init"

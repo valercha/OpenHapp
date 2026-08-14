@@ -59,6 +59,7 @@ func (s *Store) Load() (config.Config, error) {
 		}
 		switch fields[0] {
 		case "config":
+			section = ""
 			if len(fields) >= 3 && fields[1] == "openhapp" {
 				section = strings.Trim(fields[2], "'\"")
 			}

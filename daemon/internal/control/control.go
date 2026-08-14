@@ -74,7 +74,10 @@ func (s *Server) Stop() error {
 	if err := ln.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 		return fmt.Errorf("close control socket: %w", err)
 	}
-	return os.Remove(s.socketPath)
+	if err := os.Remove(s.socketPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove control socket: %w", err)
+	}
+	return nil
 }
 
 func (s *Server) acceptLoop(ctx context.Context, ln net.Listener) {

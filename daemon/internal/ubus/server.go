@@ -69,6 +69,9 @@ func (s *Server) Status() state.Snapshot {
 		stateSnap.Running = snap.Running
 		stateSnap.Mode = snap.Config.Mode
 		stateSnap.Engine = snap.Config.Engine
+		if stateSnap.Version == "" {
+			stateSnap.Version = s.manifest.Version
+		}
 		return stateSnap
 	}
 	if st == nil {

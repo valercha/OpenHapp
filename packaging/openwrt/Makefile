@@ -10,6 +10,7 @@ GO_PKG:=github.com/valercha/OpenHapp/daemon
 GO_PKG_BUILD_PKG:=$(GO_PKG)/cmd/openhappd $(GO_PKG)/cmd/openhappd-rpc
 
 include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
+export GO111MODULE:=off
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
@@ -17,7 +18,7 @@ PKG_BUILD_FLAGS:=no-mips16
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 SOURCE_STAGE:=$(PKG_BUILD_DIR)
-OPENHAPP_SOURCE_DIR?=$(CURDIR)/../../../daemon
+OPENHAPP_SOURCE_DIR?=$(shell readlink -f $(CURDIR)/package/openhapp/../../daemon)
 OPENHAPP_STAGE_SCRIPT?=$(CURDIR)/source.sh
 
 define Build/Prepare
