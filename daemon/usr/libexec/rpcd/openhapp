@@ -9,12 +9,12 @@
 case "$1" in
 list)
 	cat <<'EOF'
-{"start": {}, "stop": {}, "status": {}, "config": {}, "manifest": {}, "snapshot": {}}
+{"start": {}, "stop": {}, "status": {}, "config": {}, "manifest": {}, "snapshot": {}, "engine_info": {}}
 EOF
 	;;
 call)
 	[ -n "$2" ] || exit 1
-	exec /usr/bin/openhappd-rpc "$2"
+	exec /usr/bin/openhappd-rpc --raw "$2"
 	;;
 *)
 	exit 1

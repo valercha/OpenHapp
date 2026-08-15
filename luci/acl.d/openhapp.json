@@ -3,7 +3,7 @@
 		"description": "OpenHapp LuCI access control",
 		"read": {
 			"ubus": {
-				"openhapp": [ "status", "manifest", "config", "snapshot" ]
+				"openhapp": [ "status", "manifest", "config", "snapshot", "engine_info" ]
 			}
 		},
 		"write": {
