@@ -21,7 +21,7 @@ type Manifest struct {
 func Default(version string, cfg config.Config) Manifest {
 	engine := cfg.Engine
 	if engine == "" {
-		engine = "xray"
+		engine = "sing-box"
 	}
 	mode := cfg.Mode
 	if mode == "" {

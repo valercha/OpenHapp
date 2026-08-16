@@ -41,7 +41,7 @@ return view.extend({
 		var engineInfo = data[3] || {};
 
 		var enabled = config.enabled ? '1' : '0';
-		var engine = config.engine || 'xray';
+		var engine = config.engine || 'sing-box';
 		var mode = config.mode || 'proxy';
 		var listen = config.listen || '127.0.0.1:0';
 		var subscription = config.subscription || '';
