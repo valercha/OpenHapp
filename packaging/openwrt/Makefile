@@ -33,6 +33,10 @@ define Package/openhapp
   DEPENDS:=+libuci +procd +rpcd
 endef
 
+define Package/openhapp/conffiles
+/etc/config/openhapp
+endef
+
 define Package/openhapp/description
 OpenHapp runtime daemon and OpenWrt rpcd control integration.
 endef
