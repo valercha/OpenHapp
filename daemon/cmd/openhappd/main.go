@@ -73,8 +73,5 @@ func main() {
 	<-ctx.Done()
 	_ = controlServer.Stop()
 	bus.Stop()
-	if err := store.Save(bus.Config()); err != nil {
-		log.Printf("failed to persist UCI config: %v", err)
-	}
 	log.Printf("openhappd stopped: %+v", bus.Status())
 }

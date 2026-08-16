@@ -4,7 +4,7 @@ uci -q batch <<'EOF'
 set openhapp.main=openhapp
 set openhapp.main.enabled='1'
 set openhapp.main.autostart='1'
-set openhapp.main.engine='xray'
+set openhapp.main.engine='sing-box'
 set openhapp.main.mode='proxy'
 set openhapp.main.log_level='info'
 set openhapp.main.listen='127.0.0.1:0'

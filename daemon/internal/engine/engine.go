@@ -36,7 +36,7 @@ type Engine struct {
 // New creates a new engine facade.
 func New(name string) *Engine {
 	if name == "" {
-		name = "xray"
+		name = "sing-box"
 	}
 
 	return &Engine{
@@ -65,7 +65,7 @@ func (e *Engine) Name() string {
 // SetName updates the engine name and selects its backend.
 func (e *Engine) SetName(name string) {
 	if name == "" {
-		name = "xray"
+		name = "sing-box"
 	}
 
 	e.mu.Lock()
@@ -88,10 +88,12 @@ func (e *Engine) Start(ctx context.Context) error {
 		return nil
 	}
 
-	if e.backend != nil {
-		if err := e.backend.Check(ctx); err != nil {
-			return fmt.Errorf("%s check failed: %w", e.name, err)
-		}
+	if e.backend == nil {
+		return fmt.Errorf("%s engine backend is not implemented", e.name)
+	}
+
+	if err := e.backend.Check(ctx); err != nil {
+		return fmt.Errorf("%s check failed: %w", e.name, err)
 	}
 
 	e.running = true

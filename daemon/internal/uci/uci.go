@@ -108,8 +108,19 @@ func (s *Store) Save(cfg config.Config) error {
 
 	var content strings.Builder
 	content.WriteString("config openhapp 'main'\n")
-	content.WriteString(fmt.Sprintf("\toption enabled '%t'\n", cfg.Enabled))
-	content.WriteString(fmt.Sprintf("\toption autostart '%t'\n", cfg.Autostart))
+
+	enabled := "0"
+	if cfg.Enabled {
+		enabled = "1"
+	}
+
+	autostart := "0"
+	if cfg.Autostart {
+		autostart = "1"
+	}
+
+	content.WriteString(fmt.Sprintf("\toption enabled '%s'\n", enabled))
+	content.WriteString(fmt.Sprintf("\toption autostart '%s'\n", autostart))
 	content.WriteString(fmt.Sprintf("\toption engine '%s'\n", escapeUCIValue(cfg.Engine)))
 	content.WriteString(fmt.Sprintf("\toption mode '%s'\n", escapeUCIValue(cfg.Mode)))
 	content.WriteString(fmt.Sprintf("\toption log_level '%s'\n", escapeUCIValue(cfg.LogLevel)))

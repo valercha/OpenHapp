@@ -5,15 +5,27 @@ import (
 	"testing"
 )
 
-func TestNewDefaultsToXray(t *testing.T) {
+func TestNewDefaultsToSingBox(t *testing.T) {
 	e := New("")
 
-	if e.Name() != "xray" {
+	if e.Name() != "sing-box" {
 		t.Fatalf("unexpected engine name: %q", e.Name())
 	}
 
-	if e.Backend() != nil {
-		t.Fatal("xray should not have a concrete backend yet")
+	if _, ok := e.Backend().(*SingBoxBackend); !ok {
+		t.Fatalf("expected Sing-box backend, got %T", e.Backend())
+	}
+}
+
+func TestStartFailsForUnsupportedEngine(t *testing.T) {
+	e := New("xray")
+
+	if err := e.Start(context.Background()); err == nil {
+		t.Fatal("expected unsupported engine error")
+	}
+
+	if e.Running() {
+		t.Fatal("unsupported engine must remain stopped")
 	}
 }
 

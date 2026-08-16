@@ -18,7 +18,7 @@ type Config struct {
 func Default() Config {
 	return Config{
 		Enabled:      true,
-		Engine:       "xray",
+		Engine:       "sing-box",
 		Mode:         "proxy",
 		LogLevel:     "info",
 		Listen:       "127.0.0.1:0",

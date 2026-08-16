@@ -2,6 +2,7 @@ package uci
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/valercha/OpenHapp/daemon/internal/config"
@@ -22,6 +23,21 @@ func TestStoreRoundTrip(t *testing.T) {
 
 	if err := store.Save(want); err != nil {
 		t.Fatalf("save: %v", err)
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read saved config: %v", err)
+	}
+
+	saved := string(content)
+
+	if !strings.Contains(saved, "option enabled '0'") {
+		t.Fatalf("expected UCI enabled flag to be 0, got:\n%s", saved)
+	}
+
+	if !strings.Contains(saved, "option autostart '1'") {
+		t.Fatalf("expected UCI autostart flag to be 1, got:\n%s", saved)
 	}
 
 	got, err := store.Load()

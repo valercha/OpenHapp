@@ -6,15 +6,35 @@
       "type": "view",
       "path": "openhapp/dashboard"
     },
-    "children": {
-      "actions": {
-        "title": "Actions",
-        "order": 10,
-        "action": {
-          "type": "view",
-          "path": "openhapp/actions"
-        }
+    "depends": {
+      "acl": [ "luci-app-openhapp" ]
+    }
+  },
+
+  "admin/services/openhapp/config": {
+    "title": "Configuration",
+    "order": 10,
+    "action": {
+      "type": "view",
+      "path": "openhapp/config"
+    },
+    "depends": {
+      "acl": [ "luci-app-openhapp" ],
+      "uci": {
+        "openhapp": true
       }
+    }
+  },
+
+  "admin/services/openhapp/actions": {
+    "title": "Actions",
+    "order": 20,
+    "action": {
+      "type": "view",
+      "path": "openhapp/actions"
+    },
+    "depends": {
+      "acl": [ "luci-app-openhapp" ]
     }
   }
 }
