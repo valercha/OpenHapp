@@ -40,6 +40,16 @@ return view.extend({
 
 		o = s.option(
 			form.ListValue,
+			'ownership',
+			_('Engine ownership'),
+			_('Defines whether OpenHapp manages the engine process or only observes an external engine.')
+		);
+		o.value('external', _('External'));
+		o.rmempty = false;
+		o.default = 'external';
+
+		o = s.option(
+			form.ListValue,
 			'mode',
 			_('Mode'),
 			_('Runtime routing mode.')

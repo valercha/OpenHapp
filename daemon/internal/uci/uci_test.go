@@ -16,6 +16,7 @@ func TestStoreRoundTrip(t *testing.T) {
 	want.Enabled = false
 	want.Autostart = true
 	want.Engine = "sing-box"
+	want.Ownership = "external"
 	want.Mode = "tun"
 	want.LogLevel = "debug"
 	want.Listen = "127.0.0.1:1080"
@@ -38,6 +39,10 @@ func TestStoreRoundTrip(t *testing.T) {
 
 	if !strings.Contains(saved, "option autostart '1'") {
 		t.Fatalf("expected UCI autostart flag to be 1, got:\n%s", saved)
+	}
+
+	if !strings.Contains(saved, "option ownership 'external'") {
+		t.Fatalf("expected UCI ownership to be external, got:\n%s", saved)
 	}
 
 	got, err := store.Load()

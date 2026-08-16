@@ -6,6 +6,7 @@ import "time"
 type Config struct {
 	Enabled      bool      `json:"enabled"`
 	Engine       string    `json:"engine"`
+	Ownership    string    `json:"ownership"`
 	Mode         string    `json:"mode"`
 	LogLevel     string    `json:"log_level"`
 	Listen       string    `json:"listen"`
@@ -19,6 +20,7 @@ func Default() Config {
 	return Config{
 		Enabled:      true,
 		Engine:       "sing-box",
+		Ownership:    "external",
 		Mode:         "proxy",
 		LogLevel:     "info",
 		Listen:       "127.0.0.1:0",

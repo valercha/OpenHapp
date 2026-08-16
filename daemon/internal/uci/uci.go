@@ -78,6 +78,8 @@ func (s *Store) Load() (config.Config, error) {
 				cfg.Engine = value
 			case "mode":
 				cfg.Mode = value
+			case "ownership":
+				cfg.Ownership = value
 			case "log_level":
 				cfg.LogLevel = value
 			case "listen":
@@ -122,6 +124,7 @@ func (s *Store) Save(cfg config.Config) error {
 	content.WriteString(fmt.Sprintf("\toption enabled '%s'\n", enabled))
 	content.WriteString(fmt.Sprintf("\toption autostart '%s'\n", autostart))
 	content.WriteString(fmt.Sprintf("\toption engine '%s'\n", escapeUCIValue(cfg.Engine)))
+	content.WriteString(fmt.Sprintf("\toption ownership '%s'\n", escapeUCIValue(cfg.Ownership)))
 	content.WriteString(fmt.Sprintf("\toption mode '%s'\n", escapeUCIValue(cfg.Mode)))
 	content.WriteString(fmt.Sprintf("\toption log_level '%s'\n", escapeUCIValue(cfg.LogLevel)))
 	content.WriteString(fmt.Sprintf("\toption listen '%s'\n", escapeUCIValue(cfg.Listen)))
