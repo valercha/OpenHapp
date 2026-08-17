@@ -99,16 +99,15 @@ func escapeUCIValue(v string) string {
 	return strings.ReplaceAll(v, "'", "\\'")
 }
 
-func (s *Store) Save(cfg config.Config) error {
-	s.mu.RLock()
-	path := s.path
-	s.mu.RUnlock()
+func mainSectionHeader(line string) bool {
+	line = strings.TrimSpace(line)
+	return line == "config openhapp 'main'" ||
+		line == `config openhapp "main"`
+}
 
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("ensure config dir: %w", err)
-	}
-
+func renderMainConfig(cfg config.Config) string {
 	var content strings.Builder
+
 	content.WriteString("config openhapp 'main'\n")
 
 	enabled := "0"
@@ -129,6 +128,63 @@ func (s *Store) Save(cfg config.Config) error {
 	content.WriteString(fmt.Sprintf("\toption log_level '%s'\n", escapeUCIValue(cfg.LogLevel)))
 	content.WriteString(fmt.Sprintf("\toption listen '%s'\n", escapeUCIValue(cfg.Listen)))
 	content.WriteString(fmt.Sprintf("\toption subscription '%s'\n", escapeUCIValue(cfg.Subscription)))
+
+	return content.String()
+}
+
+func (s *Store) Save(cfg config.Config) error {
+	s.mu.RLock()
+	path := s.path
+	s.mu.RUnlock()
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("ensure config dir: %w", err)
+	}
+
+	existing, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("read uci config: %w", err)
+	}
+
+	mainConfig := renderMainConfig(cfg)
+
+	var content strings.Builder
+	lines := strings.Split(string(existing), "\n")
+
+	inMain := false
+	wroteMain := false
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		if strings.HasPrefix(trimmed, "config ") {
+			inMain = mainSectionHeader(trimmed)
+
+			if inMain {
+				if !wroteMain {
+					content.WriteString(mainConfig)
+					wroteMain = true
+				}
+				continue
+			}
+		}
+
+		if inMain {
+			continue
+		}
+
+		if line != "" || content.Len() > 0 {
+			content.WriteString(line)
+			content.WriteByte('\n')
+		}
+	}
+
+	if !wroteMain {
+		if content.Len() > 0 && !strings.HasSuffix(content.String(), "\n\n") {
+			content.WriteByte('\n')
+		}
+		content.WriteString(mainConfig)
+	}
 
 	return os.WriteFile(path, []byte(content.String()), 0o644)
 }

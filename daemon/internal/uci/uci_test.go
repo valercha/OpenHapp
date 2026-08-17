@@ -53,6 +53,7 @@ func TestStoreRoundTrip(t *testing.T) {
 	if got.Enabled != want.Enabled ||
 		got.Autostart != want.Autostart ||
 		got.Engine != want.Engine ||
+		got.Ownership != want.Ownership ||
 		got.Mode != want.Mode ||
 		got.LogLevel != want.LogLevel ||
 		got.Listen != want.Listen ||
@@ -78,5 +79,115 @@ func TestLoadIgnoresOtherSections(t *testing.T) {
 	}
 	if got.Engine != "xray" {
 		t.Fatalf("unexpected engine: %q", got.Engine)
+	}
+}
+
+func TestStoreSaveAddsMainWithoutRemovingOtherSections(t *testing.T) {
+	path := t.TempDir() + "/openhapp"
+	store := New(path)
+
+	initial := `config profile 'de-01'
+	option name 'Germany'
+	option server 'example.com'
+
+config subscription 'sub1'
+	option name 'Example'
+	option url 'https://example.test/sub'
+`
+
+	if err := os.WriteFile(path, []byte(initial), 0o644); err != nil {
+		t.Fatalf("write initial config: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.LogLevel = "debug"
+
+	if err := store.Save(cfg); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read saved config: %v", err)
+	}
+
+	saved := string(content)
+
+	for _, expected := range []string{
+		"config openhapp 'main'",
+		"option log_level 'debug'",
+		"config profile 'de-01'",
+		"option name 'Germany'",
+		"config subscription 'sub1'",
+		"option url 'https://example.test/sub'",
+	} {
+		if !strings.Contains(saved, expected) {
+			t.Fatalf("expected content %q, got:\n%s", expected, saved)
+		}
+	}
+}
+
+func TestStoreSavePreservesOtherSections(t *testing.T) {
+	path := t.TempDir() + "/openhapp"
+	store := New(path)
+
+	initial := `config openhapp 'main'
+	option enabled '1'
+	option autostart '1'
+	option engine 'sing-box'
+	option ownership 'external'
+	option mode 'proxy'
+	option log_level 'info'
+	option listen '127.0.0.1:0'
+	option subscription ''
+
+config profile 'de-01'
+	option name 'Germany'
+	option server 'example.com'
+	option port '443'
+
+config subscription 'sub1'
+	option name 'Example'
+	option url 'https://example.test/sub'
+`
+
+	if err := os.WriteFile(path, []byte(initial), 0o644); err != nil {
+		t.Fatalf("write initial config: %v", err)
+	}
+
+	cfg, err := store.Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+
+	cfg.LogLevel = "debug"
+
+	if err := store.Save(cfg); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read saved config: %v", err)
+	}
+
+	saved := string(content)
+
+	for _, expected := range []string{
+		"config profile 'de-01'",
+		"option name 'Germany'",
+		"option server 'example.com'",
+		"option port '443'",
+		"config subscription 'sub1'",
+		"option name 'Example'",
+		"option url 'https://example.test/sub'",
+	} {
+		if !strings.Contains(saved, expected) {
+			t.Fatalf("expected preserved content %q, got:\n%s", expected, saved)
+		}
+	}
+
+	if !strings.Contains(saved, "option log_level 'debug'") {
+		t.Fatalf("expected updated main config, got:\n%s", saved)
 	}
 }
