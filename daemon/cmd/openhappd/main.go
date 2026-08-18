@@ -11,6 +11,7 @@ import (
 	"github.com/valercha/OpenHapp/daemon/internal/control"
 	"github.com/valercha/OpenHapp/daemon/internal/engine"
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
+	"github.com/valercha/OpenHapp/daemon/internal/profile"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
@@ -23,6 +24,7 @@ func main() {
 	log.Printf("openhappd %s starting", version.String())
 
 	store := uci.New("/etc/config/openhapp")
+	profileStore := profile.NewStore("/etc/config/openhapp")
 	cfg, err := store.Load()
 	if err != nil {
 		log.Printf("failed to load UCI config, falling back to defaults: %v", err)
@@ -36,8 +38,8 @@ func main() {
 	eng := engine.New(cfg.Engine)
 	svc := service.New(cfg, st)
 	svc.SetEngine(eng)
-	bus := ubus.New(svc, st, cfg, m)
-	controlServer := control.NewServer(svc, m, "")
+	bus := ubus.New(svc, st, cfg, m, profileStore)
+	controlServer := control.NewServer(svc, m, "", profileStore)
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {

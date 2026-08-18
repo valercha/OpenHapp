@@ -10,16 +10,19 @@ import (
 	"sync"
 
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
+	"github.com/valercha/OpenHapp/daemon/internal/profile"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/ubus"
 )
 
 const defaultSocketPath = "/var/run/openhapp.sock"
+const defaultConfigPath = "/etc/config/openhapp"
 
 type Server struct {
 	mu         sync.Mutex
 	svc        *service.Service
 	manifest   manifest.Manifest
+	profiles   *profile.Store
 	socketPath string
 	listener   net.Listener
 }
@@ -34,32 +37,53 @@ type Response struct {
 	Error  string `json:"error,omitempty"`
 }
 
-func NewServer(svc *service.Service, m manifest.Manifest, socketPath string) *Server {
+func NewServer(
+	svc *service.Service,
+	m manifest.Manifest,
+	socketPath string,
+	profiles *profile.Store,
+) *Server {
 	if socketPath == "" {
 		socketPath = defaultSocketPath
 	}
-	return &Server{svc: svc, manifest: m, socketPath: socketPath}
+
+	if profiles == nil {
+		profiles = profile.NewStore(defaultConfigPath)
+	}
+
+	return &Server{
+		svc:        svc,
+		manifest:   m,
+		profiles:   profiles,
+		socketPath: socketPath,
+	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	if s.listener != nil {
 		return nil
 	}
+
 	if err := os.Remove(s.socketPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("remove control socket: %w", err)
 	}
+
 	ln, err := net.Listen("unix", s.socketPath)
 	if err != nil {
 		return fmt.Errorf("listen on control socket: %w", err)
 	}
+
 	if err := os.Chmod(s.socketPath, 0o660); err != nil {
 		_ = ln.Close()
 		return fmt.Errorf("chmod control socket: %w", err)
 	}
+
 	s.listener = ln
 	go s.acceptLoop(ctx, ln)
+
 	return nil
 }
 
@@ -68,15 +92,19 @@ func (s *Server) Stop() error {
 	ln := s.listener
 	s.listener = nil
 	s.mu.Unlock()
+
 	if ln == nil {
 		return nil
 	}
+
 	if err := ln.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
 		return fmt.Errorf("close control socket: %w", err)
 	}
+
 	if err := os.Remove(s.socketPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("remove control socket: %w", err)
 	}
+
 	return nil
 }
 
@@ -91,13 +119,16 @@ func (s *Server) acceptLoop(ctx context.Context, ln net.Listener) {
 				return
 			}
 		}
+
 		go s.handleConn(ctx, conn)
 	}
 }
 
 func (s *Server) handleConn(ctx context.Context, conn net.Conn) {
 	defer conn.Close()
+
 	var req Request
+
 	if err := json.NewDecoder(conn).Decode(&req); err != nil {
 		_ = json.NewEncoder(conn).Encode(Response{Error: err.Error()})
 		return
@@ -108,12 +139,31 @@ func (s *Server) handleConn(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	srv := ubus.New(s.svc, nil, s.svc.Config(), s.manifest)
+	s.mu.Lock()
+	profiles := s.profiles
+	manifest := s.manifest
+	s.mu.Unlock()
+
+	srv := ubus.New(
+		s.svc,
+		nil,
+		s.svc.Config(),
+		manifest,
+		profiles,
+	)
+
 	dispatcher := ubus.NewDispatcher(srv)
-	result, err := dispatcher.Dispatch(ctx, req.Method)
+
+	result, err := dispatcher.Dispatch(
+		ctx,
+		req.Method,
+		req.Params,
+	)
+
 	resp := Response{Result: result}
 	if err != nil {
 		resp.Error = err.Error()
 	}
+
 	_ = json.NewEncoder(conn).Encode(resp)
 }

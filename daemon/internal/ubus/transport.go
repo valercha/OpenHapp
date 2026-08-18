@@ -25,7 +25,7 @@ func (d *Dispatcher) HandleJSON(ctx context.Context, payload []byte) ([]byte, er
 		return nil, fmt.Errorf("decode ubus request: %w", err)
 	}
 
-	result, err := d.Dispatch(ctx, req.Method)
+	result, err := d.Dispatch(ctx, req.Method, req.Params)
 	resp := Response{Result: result}
 	if err != nil {
 		resp.Error = err.Error()

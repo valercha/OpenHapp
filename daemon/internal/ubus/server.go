@@ -10,6 +10,7 @@ import (
 	"github.com/valercha/OpenHapp/daemon/internal/manifest"
 	"github.com/valercha/OpenHapp/daemon/internal/service"
 	"github.com/valercha/OpenHapp/daemon/internal/state"
+	"github.com/valercha/OpenHapp/daemon/internal/profile"
 )
 
 // Snapshot holds the daemon runtime data in one payload.
@@ -26,11 +27,24 @@ type Server struct {
 	st       *state.State
 	cfg      config.Config
 	manifest manifest.Manifest
+	profiles *profile.Store
 }
 
 // New creates a new ubus server façade.
-func New(svc *service.Service, st *state.State, cfg config.Config, m manifest.Manifest) *Server {
-	return &Server{svc: svc, st: st, cfg: cfg, manifest: m}
+func New(
+	svc *service.Service,
+	st *state.State,
+	cfg config.Config,
+	m manifest.Manifest,
+	profiles *profile.Store,
+) *Server {
+	return &Server{
+		svc:      svc,
+		st:       st,
+		cfg:      cfg,
+		manifest: m,
+		profiles: profiles,
+	}
 }
 
 // Start starts the service runtime.
@@ -126,6 +140,57 @@ func (s *Server) EngineInfo(ctx context.Context) engine.Info {
 	}
 
 	return svc.EngineInfo(ctx)
+}
+
+func (s *Server) ProfileStore() *profile.Store {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.profiles
+}
+
+func (s *Server) ProfileListRPC() ([]profile.Profile, error) {
+	store := s.ProfileStore()
+	if store == nil {
+		return nil, fmt.Errorf("profile store is nil")
+	}
+
+	return store.List()
+}
+
+func (s *Server) ProfileGetRPC(id string) (profile.Profile, error) {
+	store := s.ProfileStore()
+	if store == nil {
+		return profile.Profile{}, fmt.Errorf("profile store is nil")
+	}
+
+	return store.Get(id)
+}
+
+func (s *Server) ProfileAddRPC(p profile.Profile) error {
+	store := s.ProfileStore()
+	if store == nil {
+		return fmt.Errorf("profile store is nil")
+	}
+
+	return store.Save(p)
+}
+
+func (s *Server) ProfileUpdateRPC(p profile.Profile) error {
+	store := s.ProfileStore()
+	if store == nil {
+		return fmt.Errorf("profile store is nil")
+	}
+
+	return store.Save(p)
+}
+
+func (s *Server) ProfileDeleteRPC(id string) error {
+	store := s.ProfileStore()
+	if store == nil {
+		return fmt.Errorf("profile store is nil")
+	}
+
+	return store.Delete(id)
 }
 
 // StartRPC is the ubus start method.

@@ -8,7 +8,9 @@
 					"manifest",
 					"config",
 					"snapshot",
-					"engine_info"
+					"engine_info",
+					"profile_list",
+					"profile_get"
 				]
 			},
 			"uci": [
@@ -19,7 +21,10 @@
 			"ubus": {
 				"openhapp": [
 					"start",
-					"stop"
+					"stop",
+					"profile_add",
+					"profile_update",
+					"profile_delete"
 				]
 			},
 			"uci": [

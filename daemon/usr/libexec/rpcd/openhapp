@@ -9,7 +9,7 @@
 case "$1" in
 list)
 	cat <<'EOF'
-{"start": {}, "stop": {}, "status": {}, "config": {}, "manifest": {}, "snapshot": {}, "engine_info": {}}
+{"start": {}, "stop": {}, "status": {}, "config": {}, "manifest": {}, "snapshot": {}, "engine_info": {}, "profile_list": {}, "profile_get": {}, "profile_add": {}, "profile_update": {}, "profile_delete": {}}
 EOF
 	;;
 call)
